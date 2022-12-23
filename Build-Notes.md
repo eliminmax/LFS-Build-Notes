@@ -465,6 +465,8 @@ I did not necessarily list the dependencies linked within the pages themselves
 * (POST-COMPLETION) Rustc-1.60.0
 * (POST-COMPLETION) tree-2.0.3
 * (POST-COMPLETION) Linux-PAM-1.5.2
+* (POST-COMPLETION) pciutils
+* (POST-COMPLETION) Xorg Server
 
 ## Not From BLFS
 * [bash-completion-2.11](https://github.com/scop/bash-completion/releases/tag/2.11)
@@ -963,6 +965,8 @@ I followed the instructions on the following pages from the BLFS section titled 
   * Had to go down the dependency tree. Like with Mesa, if it's either required or recommended, I built it.
     * There were 3 dependencies not already installed - Pixman, libepoxy, and libtirpc. None of them had required or recommended dependencies, and no issues came up when building them.
 
+At this point, I was trying to figure out what the needed drivers for my hardware were, and discovered that I'd need kernel features not included in my existing kernel configuration. I then rebuilt the kernel with new options.
+
 # Miscellaneous Issues
 
 ## End of chapter 8 crisis
@@ -983,6 +987,3 @@ Luckily, it was a quick and easy process to rebuild and reinstall.
 
 It took me a bit of experimentation to find a kernel configuration that worked, and properly configure grub, but I got there in the end - sort of. My system is bootable, but I need to manually enable the networking drivers with `modprobe` - I will rebuild it eventually, but in the meantime, adding `virtio` and `virtio_net` to `/etc/modules` should be able to ensure things work out of the box.
 
-# Future Plans
-
-I am planning to continue to work on this system as a hobby, at least for a bit. I might try to install a graphical environment - probably based around Xfce4, replace Vim with Neovim (which has more complex dependencies), install [`hed`](https://github.com/fr0zn/hed) and more. I might try to add the ability to run foreign binaries with `binfmt_misc` and `qemu`, and see if I can get flatpak set up. Also might install VSCodium (VSCode without telemetry or proprietary blobs), and see what limits I can push. These are just ideas, and this is not a system I plan on daily-driving, but I do plan on having fun and geeking out with it.
