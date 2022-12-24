@@ -50,20 +50,21 @@ I'd been interested in building a custom Linux distro for a while, and LFS seeme
   * [BLFS Linux-PAM-1.5.2](#blfs-linux-pam-152)
   * [Newt-r0-52-23 + dependencies](#newt-r0-52-23--dependencies)
   * [BLFS GLib-2.72.3](#blfs-glib-2723)
-- [Graphical Enviroment](#graphical-enviroment)
-  * [BLFS Xorg-7](#blfs-xorg-7)
-  * [Xorg Drivers and Userland QEMU Guest utilities](#xorg-drivers-and-userland-qemu-guest-utilities)
-    + [spice-protocol](#spice-protocol)
-    + [usbredir](#usbredir)
-    + [xf86-video-qxl](#xf86-video-qxl)
-    + [spice-vdagent](#spice-vdagent)
-  * [BLFS GTK+-3.24.34 + dependencies](#blfs-gtk-32434--dependencies)
-    + [libtiff-4.4.0](#libtiff-440)
-    + [librsvg-2.54.4](#librsvg-2544)
-    + [ISO Codes-4.11.0](#iso-codes-4110)
-  * [Miscellaneous installations](#miscellaneous-installations)
-    + [BLFS](#blfs)
-      - [Python Modules](#python-modules)
+  * [Graphical Enviroment](#graphical-enviroment)
+    + [BLFS Xorg-7](#blfs-xorg-7)
+    + [Xorg Drivers and Userland QEMU Guest utilities](#xorg-drivers-and-userland-qemu-guest-utilities)
+      - [spice-protocol](#spice-protocol)
+      - [usbredir](#usbredir)
+      - [xf86-video-qxl](#xf86-video-qxl)
+      - [spice-vdagent](#spice-vdagent)
+    + [BLFS GTK+-3.24.34 + dependencies](#blfs-gtk-32434--dependencies)
+      - [libtiff-4.4.0](#libtiff-440)
+      - [librsvg-2.54.4](#librsvg-2544)
+      - [ISO Codes-4.11.0](#iso-codes-4110)
+  * [Miscellaneous software](#miscellaneous-software)
+  * [From BLFS](#from-blfs-1)
+    + [Python Modules](#python-modules)
+  * [From Elsewhere](#from-elsewhere)
     + [Nerd Fonts v2.2.2](#nerd-fonts-v222)
 - [Miscellaneous Issues](#miscellaneous-issues)
   * [End of chapter 8 crisis](#end-of-chapter-8-crisis)
@@ -1019,9 +1020,9 @@ So yeah, I built all of the dependencies for the runtime dependency for `byobu-c
 
 The option `-Dman=true` caused the build to fail for me. Replacing it with `-Dman=false` fixed it, at the cost of not getting man pages
 
-# Graphical Enviroment
+## Graphical Enviroment
 
-## BLFS Xorg-7
+### BLFS Xorg-7
 
 I followed the instructions on the following pages from the BLFS section titled "Part VI. Graphical Components", with any differences or difficulties noted:
 
@@ -1059,13 +1060,13 @@ I followed the instructions on the following pages from the BLFS section titled 
 * Xorg Libinput Driver-1.2.1 from Xorg Drivers
 * xterm-372
 
-## Xorg Drivers and Userland QEMU Guest utilities
+### Xorg Drivers and Userland QEMU Guest utilities
 
 At this point, I was trying to figure out what the needed drivers for my hardware were, and discovered that I'd need kernel features not included in my existing kernel configuration. I then rebuilt the kernel with new options.
 
 Finding out what to build and how to build it was a pain. I was able to find some work-in-progress BLFS pages [here](https://wiki.linuxfromscratch.org/blfs/wiki/qemu), but they were out of date, and the build process for spice-protocols had been changed.
 
-### spice-protocol
+#### spice-protocol
 
 ```sh
 wget 'https://gitlab.freedesktop.org/spice/spice-protocol/-/archive/v0.14.4/spice-protocol-v0.14.4.tar.bz2'
@@ -1076,7 +1077,7 @@ meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=r
 sudo ninja install
 ```
 
-### usbredir
+#### usbredir
 
 * Depends on libusb and GLib. GLib requires libxslt, which in turn requires libxml2. All of those are covered in BLFS.
 
@@ -1090,7 +1091,7 @@ ninja
 sudo ninja install
 ```
 
-### xf86-video-qxl
+#### xf86-video-qxl
 
 * Depends on spice-protocol and xorg-server
 
@@ -1110,7 +1111,7 @@ make
 sudo make install
 ```
 
-### spice-vdagent
+#### spice-vdagent
 
 * Depends on spice-protocol, alsa-lib, and libinput, and libinput in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa-lib and mtdev has their own BLFS pages.
 
@@ -1123,11 +1124,11 @@ make
 sudo make install
 ```
 
-## BLFS GTK+-3.24.34 + dependencies
+### BLFS GTK+-3.24.34 + dependencies
 
 Once again, if a dependency was required or recommended, I built it.
 
-### libtiff-4.4.0
+#### libtiff-4.4.0
 
 Recommended dependency of gdk-pixbuf, which in turn is a required dependency of GTK+ 3.
 
@@ -1135,7 +1136,7 @@ Originally built according to the BLFS instructions, but that installed the libr
 
 I then deleted all of the files it installed, and rebuilt and reinstalled it with the GNU tools (i.e. `/configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/tiff-4.4.0 --libdir=/usr/lib && make && sudo make install`)
 
-### librsvg-2.54.4
+#### librsvg-2.54.4
 
 The `make install` job for this requires `cargo`, which is installed to /opt/rustc/bin. When running `sudo`, the PATH is altered, so it failed to install because `/opt/rustc/bin` was removed from the path. I fixed it by editing the sudoers configuration with `sudo visudo`, and uncommented the `Defaults secure_path` line, and edited it as follows:
 
@@ -1145,19 +1146,21 @@ Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/rus
 
 After that, it worked fine.
 
-### ISO Codes-4.11.0
+#### ISO Codes-4.11.0
 
 The download was no longer available. Replaced it with version 4.12.0.
 
-## Miscellaneous installations
+## Miscellaneous software
 
-### BLFS
+## From BLFS
 
 * lsof-4.95.0
 
-#### Python Modules
+### Python Modules
 
 * asciidoc
+
+## From Elsewhere
 
 ### Nerd Fonts v2.2.2
 
