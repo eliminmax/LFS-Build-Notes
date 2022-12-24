@@ -340,7 +340,7 @@ newexec () {
 ```
 (That last bit was added by an ansible playbook I use to initialize new VMs. I have since updated the aliases it adds.)
 
-##### (POST-COMPLETION) /etc/profile, /etc/bashrc
+##### /etc/profile, /etc/bashrc
 * The file `/etc/profile.d/source-bashrc.sh` contains the following, adapted from the Debian `/etc/profile`.
 ```sh
 # vi:ft=sh
@@ -546,22 +546,9 @@ esac
 I included or intend to include some software not part of the LFS book
 
 ## From BLFS
-I did not necessarily list the dependencies linked within the pages themselves
 
 * Sudo-1.9.11p3
 * OpenSSH-9.0p1
-* Wget-1.21.3
-* (POST-COMPLETION) cURL-7.84.0
-* (POST-COMPLETION) LSB-Tools-0.1.0
-* (POST-COMPLETION) Git-2.38.1
-* (POST-COMPLETION) Which-2.21
-* (POST-COMPLETION) LLVM-14.0.6
-* (POST-COMPLETION) Rustc-1.60.0
-* (POST-COMPLETION) tree-2.0.3
-* (POST-COMPLETION) Linux-PAM-1.5.2
-* (POST-COMPLETION) pciutils
-* (POST-COMPLETION) Xorg Server
-* (POST-COMPLETION) Xfce4 Desktop Environment
 
 ## Not From BLFS
 * [bash-completion-2.11](https://github.com/scop/bash-completion/releases/tag/2.11)
@@ -746,11 +733,13 @@ To install, just run the following:
 make PREFIX=/usr install
 ```
 
-### (POST-COMPLETION) BLFS Wget-1.21.3
+# POST-LFS Completion
+
+## BLFS Wget-1.21.3
 
 There's a complex web of optional dependencies for this one. I went with `libidn2`, `libpsl`, and `pcre2`. Unfortunately, I messed up the order of building the dependencies, but running `sudo make uninstall` and rerunning the `./configure` commands fixed it.
 
-### BLFS cURL-7.84.0
+## BLFS cURL-7.84.0
 
 `CMake` can use its own version of `curl`, or the system `curl`. At the same time, `curl` has optional dependencies on `c-ares` and `brotli`, both of which require `CMake` to build. I alreay had the optional dependencies `libidn2` and `libpsl`. I compiled the following, all of which can be found in BLFS. The repeated appearances of `CMake` and `curl` are because I built `CMake`, built `curl`, built `CMake` again using the system `curl`, then rebuilt `curl` linked agains the optional `c-ares` and `brotli` dependencies I mentioned earlier in this paragraph. In retrospect, the first build of `CMake` was never used. that aside, it went smoothly.
 
@@ -768,11 +757,11 @@ There's a complex web of optional dependencies for this one. I went with `libidn
 12. brotli
 13. curl
 
-### (POST-COMPLETION) BLFS Git-2.37.2
+## BLFS Git-2.37.2
 
 Bit of a large dependency tree - none necessary, but I wanted to include some of them.
 
-#### Dependencies that are already installed:
+### Dependencies that are already installed:
 * `cURL`
 * `OpenSSH`
 * `pcre2`
@@ -783,7 +772,7 @@ Bit of a large dependency tree - none necessary, but I wanted to include some of
 * `p11-kit`
 * `libidn2`
 
-#### Unresolved dependency installation order:
+### Unresolved dependency installation order:
 1. `npth`
 2. `libusb`
 3. `libgpg-error`
@@ -797,7 +786,7 @@ Bit of a large dependency tree - none necessary, but I wanted to include some of
 11. `GnuPG`
 12. `Git`
 
-### (POST-COMPLETION) renameutils 0.12.0
+## renameutils 0.12.0
 
 Simple tools to bulk rename and bulk copy files:
 
@@ -838,7 +827,7 @@ Installation instructions:
 as *root*, run `make install`
 
 
-### (POST-COMPLETION) BLFS Rustc-1.60.0
+## BLFS Rustc-1.60.0
 
 The dependencies for this one were `cURL`, `CMake`, `libssh2`, `LLVM` (recommended), and `GDB` (optional), all of which are also in BLFS. Of those, I'd already built `cURL` and `CMake`, and `libssh2` was easy enough to build, but `LLVM` took 30 SBUs to build, and I accidentally interrupted it about 2/3 of the way through the process. Luckily, it picked up right where it left off when I tried to relaunch the build command.
 
@@ -852,7 +841,8 @@ Reading the `rustc` docs page on bootstrapping (available [here](https://rustc-d
 6. It builds the version of `rustc` that actually gets installed using the stage1 std and stage1 artifacts - this is the "stage2 compiler"
 
 I removed the part of `/etc/profile.d/rustc.sh` that edits MANPATH, because if MANPATH is unset, it will check any `share/man` subdirectory in the same directory as a directory in the PATH, so it's not necessary, and prevents `man` from finding manpages in `/usr/share/man`.
-### (POST-COMPLETION) libevent 2.1.12
+
+## libevent 2.1.12
 
 Libevent is a dependency for `tmux`, itself a dependency for `byobu`.
 The source archive is available at https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
@@ -868,7 +858,7 @@ As root:
 make install
 ```
 
-### (POST-COMPLETION) tmux 3.3a
+## tmux 3.3a
 
 A **t**erminal **mul**tiplexer with an uncreative name. Used as a backend by `byobu` - a "terminal window manager" I often use when multitasking.
 The source archive is available at https://github.com/tmux/tmux/releases/download/3.3a/tmux-3.3a.tar.gz
@@ -882,7 +872,7 @@ As root:
 make install
 ```
 
-### (POST-COMPLETION) byobu 5.133
+## byobu 5.133
 
 A "terminal window manager" that I like to use for multitasking. Uses either GNU `screen` or `tmux` as a backend.
 
@@ -899,7 +889,7 @@ As root:
 make install
 ```
 
-### (POST-COMPLETION) bat 0.22.1
+## bat 0.22.1
 
 "A cat(1) clone with wings"
 
@@ -920,7 +910,7 @@ Explanation:
 * `--bins`: build all binaries
 * `--locked`: use the same versions of dependencies as the upstream build
 
-### (POST-COMPLETION) hexyl 0.12.0
+## hexyl 0.12.0
 
 A hexdump utility with colors and fancy output
 
@@ -931,7 +921,7 @@ cargo build --release --bins --locked
 sudo strip target/release/hexyl -o /usr/bin/hexyl
 ```
 
-### (POST-COMPLETION) fd 8.6.0
+## fd 8.6.0
 
 An alternative to `find` that's easier to use and has saner defaults
 
@@ -943,7 +933,7 @@ sudo strip target/release/fd -o /usr/bin/fd
 sudo cp doc/fd.1 /usr/share/man/man1
 ```
 
-### (POST-COMPLETION) Hed [Commit 44d3eb70dc62a1bdd2ae0f84f5993d654a73799c]
+## Hed [Commit 44d3eb70dc62a1bdd2ae0f84f5993d654a73799c]
 
 A simple vi-like hex editor with minimal dependencies
 
@@ -960,7 +950,7 @@ sudo make install
 ```
 ***Full Disclosure:*** *I have contributed a commit to adjust the hard-coded paths in the Makefile to be more consistent. Originally, it installed the binary to `/usr/bin/hed` and the man page to `/usr/local/share/man/man1`. I edited the Makefile to install both to the `/usr/local` prefix, so had I done the opposite, the `sed` command would not be needed. I opened the request on August 26th, but it was not merged until December 11th.*
 
-### (POST-COMPLETION) BLFS Linux-PAM-1.5.2
+## BLFS Linux-PAM-1.5.2
 
 I messed up this one.
 
@@ -975,7 +965,7 @@ Unfortunately, I messed up the order, and couldn't do anything that required roo
 
 I had to mount the LFS qcow2 hard drive with `guestmount` and chroot in to fix the configuration files at `/etc/pam.d`.
 
-### (POST-COMPLETION) Newt-r0-52-23 + dependencies
+## Newt-r0-52-23 + dependencies
 
 The `byobu-config` script bundled with `byobu` and used to configure it has a runtime dependency on snack.
 
@@ -1024,13 +1014,13 @@ sudo make install
 
 So yeah, I built all of the dependencies for the runtime dependency for `byobu-config`.
 
-### (POST-COMPLETION) BLFS GLib-2.72.3
+## BLFS GLib-2.72.3
 
 The option `-Dman=true` caused the build to fail for me. Replacing it with `-Dman=false` fixed it, at the cost of not getting man pages
 
-## Graphical Enviroment
+# Graphical Enviroment
 
-### BLFS Xorg-7
+## BLFS Xorg-7
 
 I followed the instructions on the following pages from the BLFS section titled "Part VI. Graphical Components", with any differences or difficulties noted:
 
@@ -1068,13 +1058,13 @@ I followed the instructions on the following pages from the BLFS section titled 
 * Xorg Libinput Driver-1.2.1 from Xorg Drivers
 * xterm-372
 
-### Xorg Drivers and Userland QEMU Guest utilities
+## Xorg Drivers and Userland QEMU Guest utilities
 
 At this point, I was trying to figure out what the needed drivers for my hardware were, and discovered that I'd need kernel features not included in my existing kernel configuration. I then rebuilt the kernel with new options.
 
 Finding out what to build and how to build it was a pain. I was able to find some work-in-progress BLFS pages [here](https://wiki.linuxfromscratch.org/blfs/wiki/qemu), but they were out of date, and the build process for spice-protocols had been changed.
 
-#### spice-protocol
+### spice-protocol
 
 ```sh
 wget 'https://gitlab.freedesktop.org/spice/spice-protocol/-/archive/v0.14.4/spice-protocol-v0.14.4.tar.bz2'
@@ -1085,7 +1075,7 @@ meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=r
 sudo ninja install
 ```
 
-#### usbredir
+### usbredir
 
 * Depends on libusb and GLib. GLib requires libxslt, which in turn requires libxml2. All of those are covered in BLFS.
 
@@ -1099,7 +1089,7 @@ ninja
 sudo ninja install
 ```
 
-#### xf86-video-qxl
+### xf86-video-qxl
 
 * Depends on spice-protocol and xorg-server
 
@@ -1119,7 +1109,7 @@ make
 sudo make install
 ```
 
-#### spice-vdagent
+### spice-vdagent
 
 * Depends on spice-protocol, alsa-lib, and libinput, and libinput in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa-lib and mtdev has their own BLFS pages.
 
@@ -1132,11 +1122,11 @@ make
 sudo make install
 ```
 
-### BLFS GTK+-3.24.34 + dependencies
+## BLFS GTK+-3.24.34 + dependencies
 
 Once again, if a dependency was required or recommended, I built it.
 
-#### libtiff-4.4.0
+### libtiff-4.4.0
 
 Recommended dependency of gdk-pixbuf, which in turn is a required dependency of GTK+ 3.
 
@@ -1144,7 +1134,7 @@ Originally built according to the BLFS instructions, but that installed the libr
 
 I then deleted all of the files it installed, and rebuilt and reinstalled it with the GNU tools (i.e. `/configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/tiff-4.4.0 --libdir=/usr/lib && make && sudo make install`)
 
-#### librsvg-2.54.4
+### librsvg-2.54.4
 
 The `make install` job for this requires `cargo`, which is installed to /opt/rustc/bin. When running `sudo`, the PATH is altered, so it failed to install because `/opt/rustc/bin` was removed from the path. I fixed it by editing the sudoers configuration with `sudo visudo`, and uncommented the `Defaults secure_path` line, and edited it as follows:
 
@@ -1154,21 +1144,21 @@ Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/rus
 
 After that, it worked fine.
 
-#### ISO Codes-4.11.0
+### ISO Codes-4.11.0
 
 The download was no longer available. Replaced it with version 4.12.0.
 
-### Miscellaneous installations
+## Miscellaneous installations
 
-#### BLFS
+### BLFS
 
 * lsof-4.95.0
 
-##### Python Modules
+#### Python Modules
 
 * asciidoc
 
-#### Nerd Fonts v2.2.2
+### Nerd Fonts v2.2.2
 
 Fonts patched to have symbols useful in various nerdy contexts - such as Linux distro logos, file type icons, and fancy prompt components.
 
