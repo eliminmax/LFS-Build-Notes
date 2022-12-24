@@ -2,6 +2,73 @@
 
 I'd been interested in building a custom Linux distro for a while, and LFS seemed like a good way to go about that. I was planning on working on that over Summer 2022, before my senior year of college, but when I was about to start, I got an email indicating that there was a 1-credit course being offered in the fall dedicated to doing just that, and I figured I might as well do it then instead. These are my notes on the process and any issues I run into.
 
+# Table of Contents
+
+- [Introduction](#introduction)
+- [Table of Contents](#table-of-contents)
+- [LFS Build/Configuration notes](#lfs-buildconfiguration-notes)
+  * [Build environment](#build-environment)
+  * [Partition Scheme](#partition-scheme)
+  * [fstab file](#fstab-file)
+  * [Diversions from LFS 11.2-systemd](#diversions-from-lfs-112-systemd)
+    + [Changes coming from official errata](#changes-coming-from-official-errata)
+    + [Changes I made myself](#changes-i-made-myself)
+        * [.bash_profile](#bash_profile)
+        * [.bashrc](#bashrc)
+        * [/etc/bash.bashrc](#etcbashbashrc)
+        * [(POST-COMPLETION) /etc/profile, /etc/bashrc](#post-completion-etcprofile-etcbashrc)
+- [Additional Software](#additional-software)
+  * [From BLFS](#from-blfs)
+  * [Not From BLFS](#not-from-blfs)
+  * [Software-specific notes](#software-specific-notes)
+    + [Why not all software is mentioned here](#why-not-all-software-is-mentioned-here)
+        * [(Example) 5.2. Binutils-2.39 - Pass 1](#example-52-binutils-239---pass-1)
+      - [(Example) 5.3. GCC-12.2.0 - Pass 1](#example-53-gcc-1220---pass-1)
+    + [8.5. Glibc-2.36](#85-glibc-236)
+    + [8.11. Readline-8.1.2](#811-readline-812)
+    + [8.13. Bc-6.0.1](#813-bc-601)
+    + [8.18. Binutils-2.39](#818-binutils-239)
+    + [8.69.1 Vim-9.0.0228](#8691-vim-900228)
+    + [Oil 0.12.9-hist](#oil-0129-hist)
+    + [Bash-completion 2.11](#bash-completion-211)
+    + [Neofetch](#neofetch)
+    + [(POST-COMPLETION) BLFS Wget-1.21.3](#post-completion-blfs-wget-1213)
+    + [BLFS cURL-7.84.0](#blfs-curl-7840)
+    + [(POST-COMPLETION) BLFS Git-2.37.2](#post-completion-blfs-git-2372)
+      - [Dependencies that are already installed:](#dependencies-that-are-already-installed)
+      - [Unresolved dependency installation order:](#unresolved-dependency-installation-order)
+    + [(POST-COMPLETION) renameutils 0.12.0](#post-completion-renameutils-0120)
+    + [(POST-COMPLETION) BLFS Rustc-1.60.0](#post-completion-blfs-rustc-1600)
+    + [(POST-COMPLETION) libevent 2.1.12](#post-completion-libevent-2112)
+    + [(POST-COMPLETION) tmux 3.3a](#post-completion-tmux-33a)
+    + [(POST-COMPLETION) byobu 5.133](#post-completion-byobu-5133)
+    + [(POST-COMPLETION) bat 0.22.1](#post-completion-bat-0221)
+    + [(POST-COMPLETION) hexyl 0.12.0](#post-completion-hexyl-0120)
+    + [(POST-COMPLETION) fd 8.6.0](#post-completion-fd-860)
+    + [(POST-COMPLETION) Hed [Commit 44d3eb70dc62a1bdd2ae0f84f5993d654a73799c]](#post-completion-hed-commit-44d3eb70dc62a1bdd2ae0f84f5993d654a73799c)
+    + [(POST-COMPLETION) BLFS Linux-PAM-1.5.2](#post-completion-blfs-linux-pam-152)
+    + [(POST-COMPLETION) Newt-r0-52-23 + dependencies](#post-completion-newt-r0-52-23--dependencies)
+    + [(POST-COMPLETION) BLFS GLib-2.72.3](#post-completion-blfs-glib-2723)
+  * [Graphical Enviroment](#graphical-enviroment)
+    + [BLFS Xorg-7](#blfs-xorg-7)
+    + [Xorg Drivers and Userland QEMU Guest utilities](#xorg-drivers-and-userland-qemu-guest-utilities)
+      - [spice-protocol](#spice-protocol)
+      - [usbredir](#usbredir)
+      - [xf86-video-qxl](#xf86-video-qxl)
+      - [spice-vdagent](#spice-vdagent)
+    + [BLFS GTK+-3.24.34 + dependencies](#blfs-gtk-32434--dependencies)
+      - [libtiff-4.4.0](#libtiff-440)
+      - [librsvg-2.54.4](#librsvg-2544)
+      - [ISO Codes-4.11.0](#iso-codes-4110)
+    + [Miscellaneous installations](#miscellaneous-installations)
+      - [BLFS](#blfs)
+        * [Python Modules](#python-modules)
+      - [Nerd Fonts v2.2.2](#nerd-fonts-v222)
+- [Miscellaneous Issues](#miscellaneous-issues)
+  * [End of chapter 8 crisis](#end-of-chapter-8-crisis)
+  * [Kernel config woes](#kernel-config-woes)
+  * [SSH X forwarding](#ssh-x-forwarding)
+
 # LFS Build/Configuration notes
 
 I am using Linux From Scratch Version 11.2-systemd as a basis for my build, and will note any deviation from its instructions, or difficulties I ran into while working on it.
@@ -381,36 +448,13 @@ done
 ```
 
 * the /etc/bashrc file is as follows:
-```sh
+```bash
 # system bashrc
-if [[ -f /usr/share/bash-completion/bash_completion ]]; then
-	. /usr/share/bash-completion/bash_completion
+
+# TERM fix
+if [ "$TERM" = "xterm" ]; then
+    TERM=xterm-256color
 fi
-
-## Shell options
-shopt -s autocd
-shopt -s checkwinsize
-shopt -s cmdhist
-shopt -s complete_fullquote
-shopt -s expand_aliases
-shopt -s extglob
-shopt -s extquote
-shopt -s force_fignore
-shopt -s globasciiranges
-shopt -s globstar
-shopt -s interactive_comments
-shopt -s progcomp
-shopt -s promptvars
-shopt -s sourcepath
-
-# Set PS1
-case "$TERM" in
-	xterm-kitty|*-256color|alacritty)
-		PS1='\[\e[1m\]{\[\e[38;5;178m\]\u@\h\[\e[39m\]} \[\e[38;5;246m\]\w \[\e[39m\]\$ \[\e[m\]'
-	;; *)
-		PS1='\[\e[1m\]{\e[0;33m\]\u@\h\[\e[1;39m\]} \[\e[37m\]\w \[\e[1;39m\]\$ \[\e[m\]'
-	;;
-esac
 
 ## ALIASES
 alias clear-hist='history -c > ~/.bash_history;'
@@ -445,6 +489,56 @@ newexec () {
     fi
 }
 
+# completion
+if [[ -f /usr/share/bash-completion/bash_completion ]]; then
+	. /usr/share/bash-completion/bash_completion
+fi
+
+## Shell options
+shopt -s autocd
+shopt -s checkwinsize
+shopt -s cmdhist
+shopt -s complete_fullquote
+shopt -s expand_aliases
+shopt -s extglob
+shopt -s extquote
+shopt -s force_fignore
+shopt -s globasciiranges
+shopt -s globstar
+shopt -s interactive_comments
+shopt -s progcomp
+shopt -s promptvars
+shopt -s sourcepath
+
+# Set HISTFILE if not already set in environment
+HISTFILE="${HISTFILE=${HOME}/.bash_history}"
+
+# Set PS1
+case "$TERM" in
+	xterm-kitty|*-256color|alacritty)
+        _prompt_exit_status_color() {
+            _exit_status=$?
+            if (exit $_exit_status); then
+                printf '\e[1;38;5;46m'
+            else
+                printf '\e[1;38;5;124m'
+            fi
+            return $_exit_status
+        }
+        PS1='\[\e[1m\][\[$(_prompt_exit_status_color)\]$?\[\e[39m\]] {\[\e[38;5;178m\]\u@\h\[\e[39m\]} \[\e[38;5;246m\]\w \[\e[39m\]\$ \[\e[m\]'
+	;; *)
+        _prompt_exit_status_color() {
+            _exit_status=$?
+            if (exit $_exit_status); then
+                printf '\e[1;32m'
+            else
+                printf '\e[1;31m'
+            fi
+            return $_exit_status
+        }
+		PS1='\[\e[1m\][\[$(_prompt_exit_status_color)\]$?\[\e[39m\]] {\e[0;33m\]\u@\h\[\e[1;39m\]} \[\e[37m\]\w \[\e[1;39m\]\$ \[\e[m\]'
+	;;
+esac
 # vi:ft=sh
 ```
 
@@ -678,7 +772,7 @@ There's a complex web of optional dependencies for this one. I went with `libidn
 
 Bit of a large dependency tree - none necessary, but I wanted to include some of them.
 
-#### Already installed:
+#### Dependencies that are already installed:
 * `cURL`
 * `OpenSSH`
 * `pcre2`
@@ -689,7 +783,7 @@ Bit of a large dependency tree - none necessary, but I wanted to include some of
 * `p11-kit`
 * `libidn2`
 
-#### Installation Order:
+#### Unresolved dependency installation order:
 1. `npth`
 2. `libusb`
 3. `libgpg-error`
@@ -923,14 +1017,14 @@ Non-BLFS Source tarballs:
 At this point, I decided that moving forward, if I could get the following to work, I would not explicitly memtion the build/install process. Not all of the arguments are needed for all software, but they won't hurt.
 
 ```sh
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/$pkg-$pkg_version
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/"$(basename "$PWD")"
 make
 sudo make install
 ```
 
 So yeah, I built all of the dependencies for the runtime dependency for `byobu-config`.
 
-### (POST-LFS) BLFS GLib-2.72.3
+### (POST-COMPLETION) BLFS GLib-2.72.3
 
 The option `-Dman=true` caused the build to fail for me. Replacing it with `-Dman=false` fixed it, at the cost of not getting man pages
 
@@ -971,6 +1065,8 @@ I followed the instructions on the following pages from the BLFS section titled 
 * Xorg-Server-21.1.4
   * Had to go down the dependency tree. Like with Mesa, if it's either required or recommended, I built it.
     * There were 3 dependencies not already installed - Pixman, libepoxy, and libtirpc. None of them had required or recommended dependencies, and no issues came up when building them.
+* Xorg Libinput Driver-1.2.1 from Xorg Drivers
+* xterm-372
 
 ### Xorg Drivers and Userland QEMU Guest utilities
 
@@ -1025,7 +1121,7 @@ sudo make install
 
 #### spice-vdagent
 
-* Depends on spice-protocol, alsa, and libinput, which in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa and mtdev has their own BLFS pages.
+* Depends on spice-protocol, alsa-lib, and libinput, and libinput in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa-lib and mtdev has their own BLFS pages.
 
 ```sh
 wget https://www.spice-space.org/download/releases/spice-vdagent-0.22.1.tar.bz2
@@ -1036,23 +1132,53 @@ make
 sudo make install
 ```
 
-#### Additional components from BLFS
+### BLFS GTK+-3.24.34 + dependencies
 
-* Installed Xorg Libinput Driver-1.2.1 from Xorg Drivers
-* Installed xterm-372
+Once again, if a dependency was required or recommended, I built it.
 
-#### Miscellaneous installations
+#### libtiff-4.4.0
 
-##### Nerd Fonts v2.2.2
+Recommended dependency of gdk-pixbuf, which in turn is a required dependency of GTK+ 3.
+
+Originally built according to the BLFS instructions, but that installed the libraries to /usr/lib64, but I want all libraries installed to /usr/lib.
+
+I then deleted all of the files it installed, and rebuilt and reinstalled it with the GNU tools (i.e. `/configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/tiff-4.4.0 --libdir=/usr/lib && make && sudo make install`)
+
+#### librsvg-2.54.4
+
+The `make install` job for this requires `cargo`, which is installed to /opt/rustc/bin. When running `sudo`, the PATH is altered, so it failed to install because `/opt/rustc/bin` was removed from the path. I fixed it by editing the sudoers configuration with `sudo visudo`, and uncommented the `Defaults secure_path` line, and edited it as follows:
+
+```sudoers
+Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/rustc/bin"
+```
+
+After that, it worked fine.
+
+#### ISO Codes-4.11.0
+
+The download was no longer available. Replaced it with version 4.12.0.
+
+### Miscellaneous installations
+
+#### BLFS
+
+* lsof-4.95.0
+
+##### Python Modules
+
+* asciidoc
+
+#### Nerd Fonts v2.2.2
+
 Fonts patched to have symbols useful in various nerdy contexts - such as Linux distro logos, file type icons, and fancy prompt components.
 
 From [version 2.2.2's release assets](https://github.com/ryanoasis/nerd-fonts/releases/tag/v2.2.2):
-* Extracted from UbuntuMono.zip
+* Extracted from UbuntuMono.zip:
   * Ubuntu Mono Bold Italic Nerd Font Complete Mono.ttf
   * Ubuntu Mono Bold Nerd Font Complete Mono.ttf
   * Ubuntu Mono Italic Nerd Font Complete Mono.ttf
   * Ubuntu Mono Nerd Font Complete Mono.ttf
-* Extracted from VictorMono.zip
+* Extracted from VictorMono.zip:
   * Victor Mono Light Nerd Font Complete Mono.ttf
   * Victor Mono Medium Oblique Nerd Font Complete Mono.ttf
   * Victor Mono SemiBold Nerd Font Complete Mono.ttf
@@ -1074,7 +1200,6 @@ From [version 2.2.2's release assets](https://github.com/ryanoasis/nerd-fonts/re
   * Victor Mono Thin Italic Nerd Font Complete Mono.ttf
   * Victor Mono ExtraLight Italic Nerd Font Complete Mono.ttf
   * Victor Mono Medium Nerd Font Complete Mono.ttf
-
 
 # Miscellaneous Issues
 

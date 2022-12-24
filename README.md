@@ -5,7 +5,7 @@ Neovim was freezing up - presumably was stuck due to needing to deal with syntax
 
 The current build notes are in the **Build-Notes.md** file.
 
-The build notes when I first completed the system are in the **Original-Build-Notes.md**.
+The build notes as of the point when I first completed the system are in the **Original-Build-Notes.md**.
 
 The kernel builds in the **kernel-configs** directory are named as follows:
 
