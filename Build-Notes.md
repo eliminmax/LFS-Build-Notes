@@ -62,10 +62,10 @@ I'd been interested in building a custom Linux distro for a while, and LFS seeme
       - [librsvg-2.54.4](#librsvg-2544)
       - [ISO Codes-4.11.0](#iso-codes-4110)
   * [Miscellaneous software](#miscellaneous-software)
-  * [From BLFS](#from-blfs-1)
-    + [Python Modules](#python-modules)
-  * [From Elsewhere](#from-elsewhere)
-    + [Nerd Fonts v2.2.2](#nerd-fonts-v222)
+    + [From BLFS](#from-blfs-1)
+      - [Python Modules](#python-modules)
+    + [From Elsewhere](#from-elsewhere)
+      - [Nerd Fonts v2.2.2](#nerd-fonts-v222)
 - [Miscellaneous Issues](#miscellaneous-issues)
   * [End of chapter 8 crisis](#end-of-chapter-8-crisis)
   * [Kernel config woes](#kernel-config-woes)
@@ -1152,17 +1152,17 @@ The download was no longer available. Replaced it with version 4.12.0.
 
 ## Miscellaneous software
 
-## From BLFS
+### From BLFS
 
 * lsof-4.95.0
 
-### Python Modules
+#### Python Modules
 
 * asciidoc
 
-## From Elsewhere
+### From Elsewhere
 
-### Nerd Fonts v2.2.2
+#### Nerd Fonts v2.2.2
 
 Fonts patched to have symbols useful in various nerdy contexts - such as Linux distro logos, file type icons, and fancy prompt components.
 
