@@ -467,6 +467,7 @@ I did not necessarily list the dependencies linked within the pages themselves
 * (POST-COMPLETION) Linux-PAM-1.5.2
 * (POST-COMPLETION) pciutils
 * (POST-COMPLETION) Xorg Server
+* (POST-COMPLETION) Xfce4 Desktop Environment
 
 ## Not From BLFS
 * [bash-completion-2.11](https://github.com/scop/bash-completion/releases/tag/2.11)
@@ -929,7 +930,13 @@ sudo make install
 
 So yeah, I built all of the dependencies for the runtime dependency for `byobu-config`.
 
-### (POST-COMPLETION) Xorg-7
+### (POST-LFS) BLFS GLib-2.72.3
+
+The option `-Dman=true` caused the build to fail for me. Replacing it with `-Dman=false` fixed it, at the cost of not getting man pages
+
+## Graphical Enviroment
+
+### BLFS Xorg-7
 
 I followed the instructions on the following pages from the BLFS section titled "Part VI. Graphical Components", with any differences or difficulties noted:
 
@@ -965,12 +972,115 @@ I followed the instructions on the following pages from the BLFS section titled 
   * Had to go down the dependency tree. Like with Mesa, if it's either required or recommended, I built it.
     * There were 3 dependencies not already installed - Pixman, libepoxy, and libtirpc. None of them had required or recommended dependencies, and no issues came up when building them.
 
+### Xorg Drivers and Userland QEMU Guest utilities
+
 At this point, I was trying to figure out what the needed drivers for my hardware were, and discovered that I'd need kernel features not included in my existing kernel configuration. I then rebuilt the kernel with new options.
+
+Finding out what to build and how to build it was a pain. I was able to find some work-in-progress BLFS pages [here](https://wiki.linuxfromscratch.org/blfs/wiki/qemu), but they were out of date, and the build process for spice-protocols had been changed.
+
+#### spice-protocol
+
+```sh
+wget 'https://gitlab.freedesktop.org/spice/spice-protocol/-/archive/v0.14.4/spice-protocol-v0.14.4.tar.bz2'
+tar -xf spice-protocol-v0.14.4.tar.bz2
+cd spice-protocol-v0.14.4
+mkdir build && cd build
+meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=release --prefix=/usr ..
+sudo ninja install
+```
+
+#### usbredir
+
+* Depends on libusb and GLib. GLib requires libxslt, which in turn requires libxml2. All of those are covered in BLFS.
+
+```sh
+wget https://www.spice-space.org/download/usbredir/usbredir-0.13.0.tar.xz
+tar -xf usbredir-0.13.0.tar.xz
+cd usbredir-0.13.0
+mkdir build && cd build
+meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=release --prefix=/usr ..
+ninja
+sudo ninja install
+```
+
+#### xf86-video-qxl
+
+* Depends on spice-protocol and xorg-server
+
+Has not had a release in years, and segfaults on modern versions of xorg. The Git repository is active, and patches to fix the issue are available.
+
+The following works currently, as of upstream git commit `52e975263fe88105d151297768c7ac675ed94122`.
+
+```sh
+git clone https://gitlab.freedesktop.org/xorg/driver/xf86-video-qxl.git
+cd xf86-video-qxl
+git remote add jmbreuer https://gitlab.freedesktop.org/jmbreuer/xf86-video-qxl.git
+git fetch jmbreuer
+git merge jmbreuer/fix-xorg-server-21
+./autogen.sh
+./configure $XORG_CONFIG
+make
+sudo make install
+```
+
+#### spice-vdagent
+
+* Depends on spice-protocol, alsa, and libinput, which in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa and mtdev has their own BLFS pages.
+
+```sh
+wget https://www.spice-space.org/download/releases/spice-vdagent-0.22.1.tar.bz2
+tar -xf spice-vdagent-0.22.1.tar.bz2
+cd spice-vdagent-0.22.1
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/spice-vdagent-0.22.1 --with-init-script=systemd
+make
+sudo make install
+```
+
+#### Additional components from BLFS
+
+* Installed Xorg Libinput Driver-1.2.1 from Xorg Drivers
+* Installed xterm-372
+
+#### Miscellaneous installations
+
+##### Nerd Fonts v2.2.2
+Fonts patched to have symbols useful in various nerdy contexts - such as Linux distro logos, file type icons, and fancy prompt components.
+
+From [version 2.2.2's release assets](https://github.com/ryanoasis/nerd-fonts/releases/tag/v2.2.2):
+* Extracted from UbuntuMono.zip
+  * Ubuntu Mono Bold Italic Nerd Font Complete Mono.ttf
+  * Ubuntu Mono Bold Nerd Font Complete Mono.ttf
+  * Ubuntu Mono Italic Nerd Font Complete Mono.ttf
+  * Ubuntu Mono Nerd Font Complete Mono.ttf
+* Extracted from VictorMono.zip
+  * Victor Mono Light Nerd Font Complete Mono.ttf
+  * Victor Mono Medium Oblique Nerd Font Complete Mono.ttf
+  * Victor Mono SemiBold Nerd Font Complete Mono.ttf
+  * Victor Mono Thin Nerd Font Complete Mono.ttf
+  * Victor Mono ExtraLight Nerd Font Complete Mono.ttf
+  * Victor Mono Light Oblique Nerd Font Complete Mono.ttf
+  * Victor Mono Thin Oblique Nerd Font Complete Mono.ttf
+  * Victor Mono SemiBold Oblique Nerd Font Complete Mono.ttf
+  * Victor Mono Oblique Nerd Font Complete Mono.ttf
+  * Victor Mono Bold Oblique Nerd Font Complete Mono.ttf
+  * Victor Mono Italic Nerd Font Complete Mono.ttf
+  * Victor Mono Light Italic Nerd Font Complete Mono.ttf
+  * Victor Mono SemiBold Italic Nerd Font Complete Mono.ttf
+  * Victor Mono Bold Italic Nerd Font Complete Mono.ttf
+  * Victor Mono Medium Italic Nerd Font Complete Mono.ttf
+  * Victor Mono Bold Nerd Font Complete Mono.ttf
+  * Victor Mono ExtraLight Oblique Nerd Font Complete Mono.ttf
+  * Victor Mono Regular Nerd Font Complete Mono.ttf
+  * Victor Mono Thin Italic Nerd Font Complete Mono.ttf
+  * Victor Mono ExtraLight Italic Nerd Font Complete Mono.ttf
+  * Victor Mono Medium Nerd Font Complete Mono.ttf
+
 
 # Miscellaneous Issues
 
 ## End of chapter 8 crisis
-At the end of chapter 8, in **8.79. Stripping**, I blindly copied in the commands that it listed, and that turned out to be a major problem, because I updated zlib to version 1.2.13, and it was set up to skip stripping a list of hard-coded libraries, which was still on 1.2.12. The `strip` binary depends on zlib, and somehow, when trying to strip its own dependency, `/usr/lib/libz.so.1.2.13` was overwritten, and was now an empty file. I had deleted the old zlib build directory, and had to restart from step one, but the `./configure` command failed without zlib already available. What I wound up doing was leaving the chroot environment, copying `/usr/lib/libz.so.1.2.11` from the build VM to the chroot, pointing the `/usr/lib/libz.so` and `/usr/lib/libz.so.1` symlinks to that, and rebuilding zlib, reverting the symlinks, rebuilding it yet again, then confirming that the one build with zlib 1.2.11 and the one build with zlib 1.2.13 were byte-for-byte identical.
+At the end of chapter 8, in **8.79. Stripping**, I blindly copied in the commands that it listed, and that turned out to be a major problem, because I updated zlib to version 1.
+2.13, and it was set up to skip stripping a list of hard-coded libraries, which was still on 1.2.12. The `strip` binary depends on zlib, and somehow, when trying to strip its own dependency, `/usr/lib/libz.so.1.2.13` was overwritten, and was now an empty file. I had deleted the old zlib build directory, and had to restart from step one, but the `./configure` command failed without zlib already available. What I wound up doing was leaving the chroot environment, copying `/usr/lib/libz.so.1.2.11` from the build VM to the chroot, pointing the `/usr/lib/libz.so` and `/usr/lib/libz.so.1` symlinks to that, and rebuilding zlib, reverting the symlinks, rebuilding it yet again, then confirming that the one build with zlib 1.2.11 and the one build with zlib 1.2.13 were byte-for-byte identical.
 
 Later on, I realized that by stripping the `/usr/bin/oil.ovm` binary, I'd accidentally broken it. All it did when run was print the following:
 
@@ -987,3 +1097,6 @@ Luckily, it was a quick and easy process to rebuild and reinstall.
 
 It took me a bit of experimentation to find a kernel configuration that worked, and properly configure grub, but I got there in the end - sort of. My system is bootable, but I need to manually enable the networking drivers with `modprobe` - I will rebuild it eventually, but in the meantime, adding `virtio` and `virtio_net` to `/etc/modules` should be able to ensure things work out of the box.
 
+## SSH X forwarding
+
+Turns out that I should have read the page on OpenSSH more carefully and/or planned ahead better. I needed to point it to the `xauth` binary in the sshd_config file, but if I'd passed the `--with-xauth=/usr/bin/xauth` flag, that wouldn't be needed. Was an easy fix regardless.
