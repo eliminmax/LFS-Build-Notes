@@ -1,749 +1,91 @@
 # Introduction
 
-I'd been interested in building a custom Linux distro for a while, and LFS seemed like a good way to go about that. I was planning on working on that over Summer 2022, before my senior year of college, but when I was about to start, I got an email indicating that there was a 1-credit course being offered in the fall dedicated to doing just that, and I figured I might as well do it then instead. These are my notes on the process and any issues I run into.
+I used Linux From Scratch Version 11.2-systemd as a basis for my build, and noted any deviation from its instructions, and difficulties I ran into while working on it.
+
+The original notes, including extensive documentation about the system I used to bootstrap and build the system, is in the file **Original-Build-Notes.md**.
+
+My final system included a few extra pieces of software: OpenSSH and Sudo from BLFS, and a few external programs: BASH completion, the Oil/Osh shell with a personal patch, and Neofetch, an eye-candy system info display tool written in bash.
+
+Originally, this page was a Github Gist I'd edit as I was building the base LFS system, but it got so big that Neovim kept freezing while I was editing it. I split off the part containing the entire Kernel config, copied my notes from the point at which I successfully booted the LFS system, and later removed most of the original notes, because this document was starting to get a bit overwhelming, and the old version was already saved to the other file.
 
 # Table of Contents
 
 - [Introduction](#introduction)
 - [Table of Contents](#table-of-contents)
-- [LFS Build/Configuration notes](#lfs-buildconfiguration-notes)
-  * [Build environment](#build-environment)
-  * [Partition Scheme](#partition-scheme)
-  * [fstab file](#fstab-file)
-  * [Diversions from LFS 11.2-systemd](#diversions-from-lfs-112-systemd)
-    + [Changes coming from official errata](#changes-coming-from-official-errata)
-    + [Changes I made myself](#changes-i-made-myself)
-        * [.bash_profile](#bash_profile)
-        * [.bashrc](#bashrc)
-        * [/etc/bash.bashrc](#etcbashbashrc)
-        * [/etc/profile, /etc/bashrc](#etcprofile-etcbashrc)
-- [Additional Software](#additional-software)
-  * [From BLFS](#from-blfs)
-  * [Not From BLFS](#not-from-blfs)
-  * [Software-specific notes](#software-specific-notes)
-    + [Why not all software is mentioned here](#why-not-all-software-is-mentioned-here)
-        * [(Example) 5.2. Binutils-2.39 - Pass 1](#example-52-binutils-239---pass-1)
-      - [(Example) 5.3. GCC-12.2.0 - Pass 1](#example-53-gcc-1220---pass-1)
-    + [8.5. Glibc-2.36](#85-glibc-236)
-    + [8.11. Readline-8.1.2](#811-readline-812)
-    + [8.13. Bc-6.0.1](#813-bc-601)
-    + [8.18. Binutils-2.39](#818-binutils-239)
-    + [8.69.1 Vim-9.0.0228](#8691-vim-900228)
-    + [Oil 0.12.9-hist](#oil-0129-hist)
-    + [Bash-completion 2.11](#bash-completion-211)
-    + [Neofetch](#neofetch)
-- [POST-LFS Completion](#post-lfs-completion)
-  * [BLFS Wget-1.21.3](#blfs-wget-1213)
-  * [BLFS cURL-7.84.0](#blfs-curl-7840)
-  * [BLFS Git-2.37.2](#blfs-git-2372)
-    + [Dependencies that are already installed:](#dependencies-that-are-already-installed)
-    + [Unresolved dependency installation order:](#unresolved-dependency-installation-order)
+- [Additional Software from BLFS](#additional-software-from-blfs)
+  * [Notes on specific software](#notes-on-specific-software)
+    + [Wget-1.21.3](#wget-1213)
+    + [cURL-7.84.0](#curl-7840)
+    + [Git-2.37.2](#git-2372)
+    + [Linux-PAM-1.5.2](#linux-pam-152)
+    + [Rustc-1.60.0](#rustc-1600)
+    + [Polkit-121](#polkit-121)
+    + [UPower-1.90.0](#upower-1900)
+    + [Mesa](#mesa)
+    + [libtiff-4.4.0](#libtiff-440)
+    + [librsvg-2.54.4](#librsvg-2544)
+- [External software](#external-software)
   * [renameutils 0.12.0](#renameutils-0120)
-  * [BLFS Rustc-1.60.0](#blfs-rustc-1600)
   * [libevent 2.1.12](#libevent-2112)
   * [tmux 3.3a](#tmux-33a)
   * [byobu 5.133](#byobu-5133)
+  * [Nerd Fonts v2.2.2](#nerd-fonts-v222)
+  * [lshw B.02.19.2](#lshw-b02192)
   * [bat 0.22.1](#bat-0221)
   * [hexyl 0.12.0](#hexyl-0120)
   * [fd 8.6.0](#fd-860)
-  * [Hed [Commit 44d3eb70dc62a1bdd2ae0f84f5993d654a73799c]](#hed-commit-44d3eb70dc62a1bdd2ae0f84f5993d654a73799c)
-  * [BLFS Linux-PAM-1.5.2](#blfs-linux-pam-152)
-  * [Newt-r0-52-23 + dependencies](#newt-r0-52-23--dependencies)
-  * [BLFS GLib-2.72.3](#blfs-glib-2723)
-  * [Graphical Enviroment](#graphical-enviroment)
-    + [BLFS Xorg-7](#blfs-xorg-7)
-    + [Xorg Drivers and Userland QEMU Guest utilities](#xorg-drivers-and-userland-qemu-guest-utilities)
-      - [spice-protocol](#spice-protocol)
-      - [usbredir](#usbredir)
-      - [xf86-video-qxl](#xf86-video-qxl)
-      - [spice-vdagent](#spice-vdagent)
-    + [BLFS GTK+-3.24.34 + dependencies](#blfs-gtk-32434--dependencies)
-      - [libtiff-4.4.0](#libtiff-440)
-      - [librsvg-2.54.4](#librsvg-2544)
-      - [ISO Codes-4.11.0](#iso-codes-4110)
-  * [Miscellaneous software](#miscellaneous-software)
-    + [From BLFS](#from-blfs-1)
-      - [Python Modules](#python-modules)
-    + [From Elsewhere](#from-elsewhere)
-      - [Nerd Fonts v2.2.2](#nerd-fonts-v222)
+  * [Hed [Commit 44d3eb7]](#hed-commit-44d3eb7)
+  * [Xorg Drivers and Guest utilities](#xorg-drivers-and-guest-utilities)
+    + [spice-protocol](#spice-protocol)
+    + [usbredir](#usbredir)
+    + [SPICE (Server) + Dependencies](#spice-server--dependencies)
+    + [xf86-video-qxl + xspice](#xf86-video-qxl--xspice)
+    + [spice-vdagent](#spice-vdagent)
+      - [QEMU Guest Agent](#qemu-guest-agent)
+- [Software updates](#software-updates)
 - [Miscellaneous Issues](#miscellaneous-issues)
   * [End of chapter 8 crisis](#end-of-chapter-8-crisis)
   * [Kernel config woes](#kernel-config-woes)
   * [SSH X forwarding](#ssh-x-forwarding)
+  * [Kernel config woes (again)](#kernel-config-woes-again)
+  * [Locale](#locale)
 
-# LFS Build/Configuration notes
+# Additional Software from BLFS
 
-I am using Linux From Scratch Version 11.2-systemd as a basis for my build, and will note any deviation from its instructions, or difficulties I ran into while working on it.
+Unless otherwise noted, I installed all required and recommended dependencies listed in the BLFS book, and did not specifically install optional dependencies. I did not write about every single package installed.
 
-## Build environment
+After building Git-2.37.2, I got into the swing of things.
 
-Building from within a Debian 11 VM running on a Pop!_OS 22.04 host system. The virtualisation stack consists of  QEMU+KVM as the hypervisor, and libvirt+virt-manager to manage it.
+The software I built from BLFS was all either one of the following, or a required or recommended dependency of something I specifically mention. If I built something from outside of BLFS with a dependency that is in BLFS, I noted it in the write-up in the section on non B/LFS software.
 
-The `lfs-builder` VM has the following specs:
-```
-lfs-builder
----------------------
-OS: Debian GNU/Linux 11 (bullseye) x86_64
-Host: KVM/QEMU (Standard PC (Q35 + ICH9, 2009) pc-q35-7.0)
-Kernel: 5.10.0-18-amd64
-Shell: bash 5.1.4
-CPU: Intel i7-10870H (12) @ 2.208GHz
-GPU: 00:01.0 Red Hat, Inc. Virtio GPU
-Memory: 24047MiB
-```
+Whenever I built something with meson, I'd pass it the arguments `-Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false`. Before I started to do that, it would install libraries to /usr/lib64, which I did not want. The other arguments are there just because.
 
-Running the `version-check.sh` script from Chapter 2.2 results in the following output:
-```
-bash, version 5.1.4(1)-release
-/bin/sh -> /usr/bin/bash
-Binutils: (GNU Binutils for Debian) 2.35.2
-bison (GNU Bison) 3.7.5
-/usr/bin/yacc -> /usr/bin/bison.yacc
-Coreutils:  8.32
-diff (GNU diffutils) 3.7
-find (GNU findutils) 4.8.0
-GNU Awk 5.1.0, API: 3.0 (GNU MPFR 4.1.0, GNU MP 6.2.1)
-/usr/bin/awk -> /usr/bin/gawk
-gcc (Debian 10.2.1-6) 10.2.1 20210110
-g++ (Debian 10.2.1-6) 10.2.1 20210110
-grep (GNU grep) 3.6
-gzip 1.10
-Linux version 5.10.0-18-amd64 (debian-kernel@lists.debian.org) (gcc-10 (Debian 10.2.1-6) 10.2.1 20210110, GNU ld (GNU Binutils for Debian) 2.35.2) #1 SMP Debian 5.10.140-1 (2022-09-02)
-m4 (GNU M4) 1.4.18
-GNU Make 4.3
-GNU patch 2.7.6
-Perl version='5.32.1';
-Python 3.9.2
-sed (GNU sed) 4.7
-tar (GNU tar) 1.34
-texi2any (GNU texinfo) 6.7
-xz (XZ Utils) 5.2.5
-g++ compilation OK
-```
+The programs I installed from BLFS for their own sake (i.e. not as a dependency) are as follows:
 
-## Partition Scheme
+* Wget-1.21.3
+* cURL-7.84.0
+* Git-2.37.2
+* Rustc-1.60.0
+* lsof-4.95.0
+* xmlto-0.0.28
+* sharutils-4.15.2
+* xdg-user-dirs-0.18
+* Python Modules
+  * asciidoc-10.2.0
+* xterm-372
+* xclock-1.1.1
+* xfce4-session-4.16.0
+* tree-2.0.3
 
-* 6 partitions:
+## Notes on specific software
 
-Partition ID | Size | Type | Mountpoint | Block Size | UUID
--------------|------|------|------------|------------|---
-`vdb1`       | 1M   | -    | -          | -          | -
-`vdb2`       | 500K | ext4 | `/boot`    | 1024       | `f910cc92-a9c9-4492-bdd9-e0503444483c`
-`vdb3`       | 25G  | ext4 | `/`        | 4096       | `9f92744a-8d9a-4377-9803-3df24ffe2bd9`
-`vdb4`       | 512M | ext4 | `/var/log` | 4096       | `c748e430-6b34-44b2-afad-47701c75f7d3`
-`vdb5`       | 4G   | swap | -          | -          | `5c3edb5e-89ee-49cd-a5f3-5155b46b675c`
+### Wget-1.21.3
 
-## fstab file
+Built this with optional dependencies libidn2, libpsl, and pcre2
 
-```fstab
-#/dev/vdb1: PARTUUID="36b65e60-bf70-e746-b4d6-fb254f1e0397"
-#/dev/vdb2: UUID="f910cc92-a9c9-4492-bdd9-e0503444483c" BLOCK_SIZE="1024" TYPE="ext4" PARTUUID="d33a63d4-7977-e346-bbc1-344f30a23647"
-#/dev/vdb3: UUID="9f92744a-8d9a-4377-9803-3df24ffe2bd9" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="a7fd248c-068c-7d4d-914f-0d72535fc9a3"
-#/dev/vdb4: UUID="c748e430-6b34-44b2-afad-47701c75f7d3" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="826d8856-05d2-5f4a-9579-2c5bf88298ca"
-#/dev/vdb5: UUID="5c3edb5e-89ee-49cd-a5f3-5155b46b675c" TYPE="swap" PARTUUID="fbfaf4e6-2927-f745-9296-a637e5f97f4d"
-UUID=9f92744a-8d9a-4377-9803-3df24ffe2bd9 /        ext4 errors=remount-ro 0 1
-UUID=f910cc92-a9c9-4492-bdd9-e0503444483c /boot    ext4 defaults          0 2
-UUID=c748e430-6b34-44b2-afad-47701c75f7d3 /var/log ext4 defaults          0 2
-UUID=5c3edb5e-89ee-49cd-a5f3-5155b46b675c none     swap defaults          0 0
-```
+### cURL-7.84.0
 
-## Diversions from LFS 11.2-systemd
-
-### Changes coming from official errata
-
-* Replaced expat 2.4.8 with expat 2.5.0 due to a security vulnerability in both the former and version 2.4.9
-* Replaced the replacement of Python 3.10.6 with 3.10.7 due to a security vulnerability with 3.10.8 due to a security vulnerability
-  * confused? It's simple - 3.10.6 had a security vulnerability, so LFS errata said to replace that with 3.10.7, but that version has had a different vulnerability found since then, so I went to the version that fixed that one instead. I then created this note because I thought it would mildly amuse me to come up with an overly verbose and confusing way of putting this. I was right about that.
-* Fixed the sanity check in Chapter 5.5 to use `$LFS_TGT-gcc` instead of `gcc`
-* Replaced zlib 11.2.12 with 11.2.13 due to a security vulnerability in the former "that could allow for trivial arbitrary code execution"
-* Replaced inetutils 2.3 with inetutils 2.4 due to 2 security vulnerabilities found in the former
-
-### Changes I made myself
-
-* Instead of the `lfs` user, I'm working as `eliminmax` in the build system.
-* Instead of the `.bash_profile` and `.bashrc` files that are found in Chapter 4.4, I used my own modified versions, seen below.
-* I did not set a root password during Chapter 8 section 8.25. Shadow-4.12.2. Instead, I disabled root login entirely, installed sudo, created a user account (called `eliminmax`, not to be confused with my user on the build system of the same name), and gave it passwordless sudo options.)
-* Once I completed the build, I replaced `/usr/bin/clear` with the amd64 variant of [`tiny-clear-elf`](https://github.com/eliminmax/tiny-clear-elf)
-* Inspired by the way some BSD systems have both `root` and `toor` users with uid 0 but different login shells, I added the following line to `/etc/passwd`:
-```passwd
-lfschroot:x:0:0:root in LFS:/mnt/lfs:/usr/local/sbin/lfs_chroot_bash
-```
-I also appended the following to `/etc/shells`:
-```conf
-/usr/local/sbin/lfs_chroot_bash
-```
-
-The custom "shell" program is actually a shell script with the following content:
-```sh
-#!/bin/sh
-. /etc/profile.d/lfs_var.sh
-exec chroot "$LFS" /usr/bin/env -i HOME=/root TERM=xterm-256color PS1='(lfs chroot) \u:\w\$ ' PATH='/usr/bin:/usr/sbin' /bin/bash --login
-```
-
-This loads the `LFS` environment variable from `/etc/profile.d/lfs_var.sh`, then runs a bash login shell within the LFS chroot environment.
-
-##### .bash_profile
-```bash
-exec env -i HOME="$HOME" TERM="$TERM" PS1="${PS1='\u:\w\$ '}" LFS="${LFS=/mnt/lfs}" /bin/bash
-```
-This does the following differently from the original:
-
-* if `$LFS` and/or `$PS1` are already set, preserve their original value/s
-
-##### .bashrc
-```bash
-set +h
-umask 022
-USER="${USER="$(whoami)"}"
-LFS="$LFS"
-LC_ALL=POSIX
-LFS_TGT="$(uname -m)-lfs-linux-gnu"
-PATH="$LFS/tools/bin:/usr/local/bin:/usr/bin"
-CONFIG_SITE="$LFS/usr/share/config.site"
-export LFS LC_ALL LFS_TGT PATH CONFIG_SITE USER
-```
-
-This does the following differently from the original:
-
-* `$PATH` is defined on one line instead of 3
-  * It does not check if `/bin` is a symlink or not - I already know it is on this system
-  * `/usr/local/bin` is included in `$PATH`
-* If not already set, the `USER` environment variable is defined with the output of `whoami` - this is so that the PROMPT_COMMAND function properly sets the terminal window title in `xterm`-like terminal emulators.
-* I sometimes compiled multiple programs in parallel to save time without dealing with the issues from parallel jobs in one compilation - though I was cautious about this, because of potential missing or corrupt dependencies when doing things this way
-* I did not disable `/etc/bash.bashrc` on the `lfs-builder` VM. If this causes a problem, I can reconsider, but I don't think it will. In order to be comprehensive, I am including its contents in this document:
-
-Additionally, I briefly had the following at the end, but I removed it because it broke `scp`, preventing me from copying a backup of the LFS directory to my main system just in case.
-
-```bash
-if [ -f "$HOME/LFS-Status" ]; then
-	source "$HOME/LFS-Status"
-	echo "Current chapter: $CURRENT_CHAPTER"
-	echo "Current section: $CURRENT_SUBCHAPTER"
-	echo 'Don'\''t forget to keep ~/LFS-Status up-to-date!'
-fi
-```
-##### /etc/bash.bashrc
-
-```bash
-# System-wide .bashrc file for interactive bash(1) shells.
-
-# To enable the settings / commands in this file for login shells as well,
-# this file has to be sourced in /etc/profile.
-
-# If not running interactively, don't do anything
-[ -z "$PS1" ] && return
-
-# check the window size after each command and, if necessary,
-# update the values of LINES and COLUMNS.
-shopt -s checkwinsize
-
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
-
-# set a fancy prompt (non-color, overwrite the one in /etc/profile)
-# but only if not SUDOing and have SUDO_PS1 set; then assume smart user.
-if ! [ -n "${SUDO_USER}" -a -n "${SUDO_PS1}" ]; then
-  PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-fi
-
-# Commented out, don't overwrite xterm -T "title" -n "icontitle" by default.
-# If this is an xterm set the title to user@host:dir
-case "$TERM" in
-xterm*|rxvt*)
-    PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD}\007"'
-    ;;
-*)
-    ;;
-esac
-
-# enable bash completion in interactive shells
-if ! shopt -oq posix; then
-  if [ -f /usr/share/bash-completion/bash_completion ]; then
-    . /usr/share/bash-completion/bash_completion
-  elif [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
-  fi
-fi
-
-# if the command-not-found package is installed, use it
-if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-not-found ]; then
-	function command_not_found_handle {
-	        # check because c-n-f could've been removed in the meantime
-                if [ -x /usr/lib/command-not-found ]; then
-		   /usr/lib/command-not-found -- "$1"
-                   return $?
-                elif [ -x /usr/share/command-not-found/command-not-found ]; then
-		   /usr/share/command-not-found/command-not-found -- "$1"
-                   return $?
-		else
-		   printf "%s: command not found\n" "$1" >&2
-		   return 127
-		fi
-	}
-fi
-# Ansible Guest-Init additions #
-PS1='\[\033[1;38;5;54m\]\u\[\033[1;38;5;170m\]@\h\[\033[39m\]:\[\033[38;5;123m\]\w\[\033[39m\]\$\[\033[0m\] '
-## Shell options
-shopt -s autocd
-shopt -s checkwinsize
-shopt -s cmdhist
-shopt -s complete_fullquote
-shopt -s expand_aliases
-shopt -s extglob
-shopt -s extquote
-shopt -s force_fignore
-shopt -s globasciiranges
-shopt -s globstar
-shopt -s interactive_comments
-shopt -s progcomp
-shopt -s promptvars
-shopt -s sourcepath
-
-## ALIASES
-alias aliases='alias;'
-alias c='clear;'
-alias cl='clear;'
-alias clear-hist='history -c > ~/.bash_history;'
-alias d='cd'
-alias dir='dir --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias grep='grep --color=auto'
-alias h='history'
-alias hi='echo "hello $(whoami)";'
-alias ipconfig='ifconfig'
-alias l='ls -F --color=auto'
-alias la='ls -A --color=auto'
-alias ll='ls -AlF --color=auto'
-alias ls='ls --color=auto'
-alias pinfo='ps -Flww -p'
-alias t='tree'
-alias v='vim'
-alias vdir='vdir --color=auto'
-alias vi='vim'
-alias wanip='curl ifconfig.co;'
-
-# Functions
-newexec () {
-  if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-      return 1
-  else
-      if [ $# -eq 2 ]; then
-          echo "#!$2" > "$1"
-      else
-          touch "$1"
-      fi
-      chmod u+x "$1"
-  fi
-}
-# Ansible Guest-Init additions #
-```
-(That last bit was added by an ansible playbook I use to initialize new VMs. I have since updated the aliases it adds.)
-
-##### /etc/profile, /etc/bashrc
-* The file `/etc/profile.d/source-bashrc.sh` contains the following, adapted from the Debian `/etc/profile`.
-```sh
-# vi:ft=sh
-if [ "${PS1-}" ]; then
-    if [ "${BASH-}" ] && [ "$BASH" != "/bin/sh" ]; then
-        # The file bash.bashrc already sets the default PS1.
-        # PS1='\h:\w\$ '
-        if [ -f /etc/bashrc ]; then
-            . /etc/bashrc
-        fi
-    else
-        if [ "$(id -u)" -eq 0 ]; then
-            PS1='# '
-        else
-            PS1='$ '
-        fi
-    fi
-fi
-```
-* the file `/etc/profile.d/editor.sh` contains the following:
-```sh
-export EDITOR=vim
-```
-
-* the `/etc/profile` file is as follows:
-```sh
-# Begin /etc/profile
-# vi:ft=sh
-# Written for Beyond Linux From Scratch
-# by James Robertson <jameswrobertson@earthlink.net>
-# modifications by Dagmar d'Surreal <rivyqntzne@pbzpnfg.arg>
-#
-# further local modifications by Eli Array Minkoff <eli@earrayminkoff.tech>
-
-# System wide environment variables and startup programs.
-
-# System wide aliases and functions should go in /etc/bashrc.  Personal
-# environment variables and startup programs should go into
-# ~/.bash_profile.  Personal aliases and functions should go into
-# ~/.bashrc.
-
-# Functions to help us manage paths.  Second argument is the name of the
-# path variable to be modified (default: PATH)
-pathremove () {
-        local IFS=':'
-        local NEWPATH
-        local DIR
-        local PATHVARIABLE=${2:-PATH}
-        for DIR in ${!PATHVARIABLE} ; do
-                if [ "$DIR" != "$1" ] ; then
-                  NEWPATH=${NEWPATH:+$NEWPATH:}$DIR
-                fi
-        done
-        export $PATHVARIABLE="$NEWPATH"
-}
-
-pathprepend () {
-        pathremove $1 $2
-        local PATHVARIABLE=${2:-PATH}
-        export $PATHVARIABLE="$1${!PATHVARIABLE:+:${!PATHVARIABLE}}"
-}
-
-pathappend () {
-        pathremove $1 $2
-        local PATHVARIABLE=${2:-PATH}
-        export $PATHVARIABLE="${!PATHVARIABLE:+${!PATHVARIABLE}:}$1"
-}
-
-export -f pathremove pathprepend pathappend
-
-# Set the initial path
-export PATH=/usr/local/bin:/usr/bin
-
-# Attempt to provide backward compatibility with LFS earlier than 11
-if [ ! -L /bin ]; then
-        pathappend /bin
-fi
-
-if [ $EUID -eq 0 ] ; then
-        pathappend /usr/sbin
-        if [ ! -L /sbin ]; then
-                pathappend /sbin
-        fi
-        unset HISTFILE
-fi
-
-# Setup some environment variables.
-export HISTSIZE=1000
-export HISTIGNORE="&:[bf]g:exit"
-
-# Set some defaults for graphical systems
-export XDG_DATA_DIRS=${XDG_DATA_DIRS:-/usr/share/}
-export XDG_CONFIG_DIRS=${XDG_CONFIG_DIRS:-/etc/xdg/}
-export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/tmp/xdg-$USER}
-
-for script in /etc/profile.d/*.sh ; do
-        if [ -r $script ] ; then
-                . $script
-        fi
-done
-
-
-# End /etc/profile
-
-```
-
-* the /etc/bashrc file is as follows:
-```bash
-# system bashrc
-
-# TERM fix
-if [ "$TERM" = "xterm" ]; then
-    TERM=xterm-256color
-fi
-
-## ALIASES
-alias clear-hist='history -c > ~/.bash_history;'
-alias dir='dir --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
-alias grep='grep --color=auto'
-alias h='history'
-alias l='ls -F'
-alias la='ls -A'
-alias ll='ls -AlF'
-alias ls='ls --color=auto'
-alias t='tree'
-alias v='vim'
-alias vdir='vdir --color=auto'
-alias vi='vim'
-alias c='clear'
-alias cl='clear'
-alias cls='clear'
-
-# Functions
-newexec () {
-    if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-        return 1
-    else
-        if [ $# -eq 2 ]; then
-            echo "#!$2" > "$1"
-        else
-            touch "$1"
-        fi
-        chmod u+x "$1"
-    fi
-}
-
-# completion
-if [[ -f /usr/share/bash-completion/bash_completion ]]; then
-	. /usr/share/bash-completion/bash_completion
-fi
-
-## Shell options
-shopt -s autocd
-shopt -s checkwinsize
-shopt -s cmdhist
-shopt -s complete_fullquote
-shopt -s expand_aliases
-shopt -s extglob
-shopt -s extquote
-shopt -s force_fignore
-shopt -s globasciiranges
-shopt -s globstar
-shopt -s interactive_comments
-shopt -s progcomp
-shopt -s promptvars
-shopt -s sourcepath
-
-# Set HISTFILE if not already set in environment
-HISTFILE="${HISTFILE=${HOME}/.bash_history}"
-
-# Set PS1
-case "$TERM" in
-	xterm-kitty|*-256color|alacritty)
-        _prompt_exit_status_color() {
-            _exit_status=$?
-            if (exit $_exit_status); then
-                printf '\e[1;38;5;46m'
-            else
-                printf '\e[1;38;5;124m'
-            fi
-            return $_exit_status
-        }
-        PS1='\[\e[1m\][\[$(_prompt_exit_status_color)\]$?\[\e[39m\]] {\[\e[38;5;178m\]\u@\h\[\e[39m\]} \[\e[38;5;246m\]\w \[\e[39m\]\$ \[\e[m\]'
-	;; *)
-        _prompt_exit_status_color() {
-            _exit_status=$?
-            if (exit $_exit_status); then
-                printf '\e[1;32m'
-            else
-                printf '\e[1;31m'
-            fi
-            return $_exit_status
-        }
-		PS1='\[\e[1m\][\[$(_prompt_exit_status_color)\]$?\[\e[39m\]] {\e[0;33m\]\u@\h\[\e[1;39m\]} \[\e[37m\]\w \[\e[1;39m\]\$ \[\e[m\]'
-	;;
-esac
-# vi:ft=sh
-```
-
-# Additional Software
-I included or intend to include some software not part of the LFS book
-
-## From BLFS
-
-* Sudo-1.9.11p3
-* OpenSSH-9.0p1
-
-## Not From BLFS
-* [bash-completion-2.11](https://github.com/scop/bash-completion/releases/tag/2.11)
-* Oil-0.12.9-hist
-  * [Oil](https://www.oilshell.org) is a new Unix shell, which aims to fix many of the security pitfalls and confusing parts of traditional Bourne-style shells. It comes with the bash-compatible `osh`. I patched it to change the path it saves the history file to, and I have an open pull request for the patch. I made a source release tarball using the process documented [here](https://github.com/oilshell/oil/wiki/Python-App-Bundle) in the Oil Github wiki. Building the release tarball requires an ANSI C environment, Bash, and GNU Make, with an optional dependency on GNU readline, so all of the dependencies are satisfied by the base LFS system. The build instructions will be documented later in this document, in the Software-specific notes.
-* [Neofetch 7.1.0](https://github.com/dylanaraps/neofetch/releases/tag/7.1.0)
-  * An eye-candy system info display tool written in bash
-
-## Software-specific notes
-
-### Why not all software is mentioned here
-I am only listing things if an issue comes up in a specific step - otherwise, this section would look like the following:
-
----
-
-##### (Example) 5.2. Binutils-2.39 - Pass 1
-
-I ran the compilation job as described in the LFS book. The commands I ran were as follows:
-
-```sh
-tar -xf binutils-2.39.tar.xz
-cd binutils-2.39
-
-mkdir -v build
-cd build
-
-../configure --prefix=$LFS/tools \
-             --with-ssysroot=$LFS \
-             --target=$LFS_TGT   \
-             --disable-nls       \
-             --enable-gprofng=no \
-             --disable-werror
-
-make
-
-make install
-```
-
-#### (Example) 5.3. GCC-12.2.0 - Pass 1
-
-```sh
-tar -xf gcc-12.2.0.tar.xz
-cd gcc-12.2.0
-
-tar -xf ../mpfr-4.1.0.tar.xz
-mv -v mpfr-4.1.0 mpfr
-tar -xf ../gmp-6.2.1.tar.xz
-mv -v gmp-6.2.1 gmp
-tar -xf ../mpc-1.2.1.tar.gz
-mv -v mpc-1.2.1 mpc
-
-case $(uname -m) in
-  x8
-
-  6_64)
-    sed -e '/m64=/s/lib64/lib/' \
-        -i.orig gcc/config/i386/t-linux64
- ;;
-esac
-
-mkdir -v build
-cd       build
-
-../configure                  \
-    --target=$LFS_TGT         \
-    --prefix=$LFS/tools       \
-    --with-glibc-version=2.36 \
-    --with-sysroot=$LFS       \
-    --with-newlib             \
-    --without-headers         \
-    --disable-nls             \
-    --disable-shared          \
-    --disable-multilib        \
-    --disable-decimal-float   \
-    --disable-threads         \
-    --disable-libatomic       \
-    --disable-libgomp         \
-    --disable-libquadmath     \
-    --disable-libssp          \
-    --disable-libvtv          \
-    --disable-libstdcxx       \
-    --enable-languages=c,c++
-
-make
-
-make install
-
-cd ..
-cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
-  `dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/install-tools/include/limits.h
-```
-
----
-
-Yeah, not going to do that for every step of the way. It's already gotten old with those two steps alone, and the info is just copied from the LFS book. Instead, I'm going to make a note of any steps that I run into trouble on, and whatever troubleshooting, workarounds, or external information/resources helped me troubleshoot. If I'm using a different version of a program, and all I need to do is replace the numbers in the command (e.g. `tar -xf zlib-1.2.13.tar.xz` instead of `tar -xf zlib-1.2.12.tar.xz`), I consider mentioning the version difference in the above Diversions section to be sufficient, and won't mention it explicitly here - I'll only mention substantial changes.
-
-### 8.5. Glibc-2.36
-
-On this one, a bunch of tests from `make check` failed. Some failures were expected, and were detailed in the LFS book, but I got significantly more, with a total of 43 tests with the `FAIL` status, and another 16 with the `XFAIL` status. My first build and test were done without the special file systems mounted within the chroot environment (I'd forgotten to mount them after booting it up), so I mounted them and tried again, `tee`ing the output to a separate file, as there was too much to store in the terminal emulator's scrollback (in the end, it totaled 47573 lines, and the output file was 24 MiB of plain text - not much storage space, but quite a lot of text. That time, I only got 3 `FAIL`ures (but still had 16 `XFAIL`ures). Two of these were mentioned in the book as being "known to fail in the LFS chroot environment," but the remaining one (`c++-types-check`) was quite alarming, and I couldn't make sense of it, so I tried going back to square one - I deleted the `glibc-2.36` directory, extracted a fresh version from `glibc-2.36.tar.xz`, applied `glibc-2.36-fhs-1.patch`, and went from there, following the instructions in the book. This time, I had several new failures (`libio/tst-fgetc-after-eof` `login/tst-grantpt` `posix/tst-spawn6` `wcsmbs/tst-fgetwc-after-eof`), but the `c++-types-check` test was fine. Turns out that was because when trying to fix the issue with the missing special file system mounts, I'd somehow damaged the process by which pseudo-terminals can be allocated - which I realized when trying to discuss the issue with my dad, I tried to start another SSH session. Rebooting the system, remounting the special file systems, and rerunning each of those tests individually with `make test t={TEST_NAME}` succeeded.
-
-To prevent similar issues from happening again, I edited the helper script I use to mount the special file systems to use a fairly basic, naïve system to check if it has already been run since boot:
-```bash
-#!/bin/bash
-
-# Fall back to hard-coded /mnt/lfs directory if LFS is not defined
-LFS="${LFS=/mnt/lfs}"
-
-if [ -f /run/lfs_mounted ]; then echo "Already mounted"; exit 1; fi
-
-mount --bind /dev "$LFS/dev"
-mount --bind /dev/pts "$LFS/dev/pts"
-mount -t proc lfs_proc "$LFS/proc"
-mount -t sysfs lfs_sysfs "$LFS/sys"
-mount -t tmpfs lfs_run "$LFS/run"
-
-if [ -h "$LFS/dev/shm" ]; then
-        mkdir -p "$LFS/$(readlink "$LFS/dev/shttps://github.com/fr0zn/hedhm")"
-fi
-
-touch /run/lfs_mounted
-```
-### 8.11. Readline-8.1.2
-
-I realized that since I last worked on the LFS system, I'd shut down the build VM while I went to grab dinner, and upon returning, I forgot to mount the special file systems, breaking the `./configure` script, as it tried to redirect output to /dev/null. This is particularly frustrating given that I first ran into this issue less than an hour after solving the previous issue with a related cause.
-
-### 8.13. Bc-6.0.1
-
-The issue with this one is simply that I was tired, and instead of `CC=gcc ./configure --prefix=/usr -G -O3 -r`, I somehow typed `CC=gcc ./configure --prefix=/usr -G -03 -r1` - notice the `0` instead of an `O`, and the extra `1` that I must have typed by mistake without noticing. Once I copied and pasted the command straight from the book, it worked fine.
-
-### 8.18. Binutils-2.39
-
-I saw some things in the `make -k check` output that I thought indicated failures, but were not actually problems. I did not realize that until my second build.
-
-### 8.69.1 Vim-9.0.0228
-
-I ran into the same issue as I did in **8.11 Readline-8.1.2**, but caught it immediately this time. The strange thing is that I'd built 15 packages successfully since the last reboot.
-
-### Oil 0.12.9-hist
-
-* Release tarball is available at time of writing at https://dl.earrayminkoff.tech/oil-0.12.9-hist.tar.gz.
-* MD5 sum is `33459a3ac8acf1c00982e1f19c8372d6`. MD5 is a known-broken algorithm, but LFS uses it anyway, so whatever.
-
-Building this one is not all that different from the packages included in LFS. Once in the `oil-0.12.9-hist` directory, run the following:
-
-```sh
-./configure --prefix /usr --datarootdir /usr/share --with-readline
-make
-./install
-```
-
-*(Do note that it's `./install`, rather than `make install`)*
-
-Oil can optionally use readline for line editing features.
-
-This installs the `oil.ovm` binary, and symlinks pointing to it called `oil` and `osh`. It maintains bash compatibility if invoked as `osh`, but aims to improve the Unix shell experience in ways that are incompatible with `bash` if invoked as `oil`
-
-### Bash-completion 2.11
-Release tarball is available at https://github.com/scop/bash-completion/releases/download/2.11/bash-completion-2.11.tar.xz
-
-This one is not all that different from those included in LFS
-
-```sh
-./configure --prefix=/usr
-make
-make install
-```
-
-After installed, you'll still need to source the completion script in each session to run it: `. /usr/share/bash-completion/bash_completion`.
-To do that automatically, add the following to your user's `.bashrc` and `.bash_profile`
-```sh
-# Use bash-completion, if available
-[[ $PS1 && -f /usr/share/bash-completion/bash_completion ]] && \
-    . /usr/share/bash-completion/bash_completion
-```
-
-### Neofetch
-
-Release tarball is available at https://github.com/dylanaraps/neofetch/archive/refs/tags/7.1.0.tar.gz
-
-To install, just run the following:
-```sh
-make PREFIX=/usr install
-```
-
-# POST-LFS Completion
-
-## BLFS Wget-1.21.3
-
-There's a complex web of optional dependencies for this one. I went with `libidn2`, `libpsl`, and `pcre2`. Unfortunately, I messed up the order of building the dependencies, but running `sudo make uninstall` and rerunning the `./configure` commands fixed it.
-
-## BLFS cURL-7.84.0
-
-`CMake` can use its own version of `curl`, or the system `curl`. At the same time, `curl` has optional dependencies on `c-ares` and `brotli`, both of which require `CMake` to build. I alreay had the optional dependencies `libidn2` and `libpsl`. I compiled the following, all of which can be found in BLFS. The repeated appearances of `CMake` and `curl` are because I built `CMake`, built `curl`, built `CMake` again using the system `curl`, then rebuilt `curl` linked agains the optional `c-ares` and `brotli` dependencies I mentioned earlier in this paragraph. In retrospect, the first build of `CMake` was never used. that aside, it went smoothly.
+`CMake` can use its own version of `curl`, or the system `curl`. At the same time, `curl` has optional dependencies on `c-ares` and `brotli`, both of which require `CMake` to build. I already had the optional dependencies `libidn2` and `libpsl` installed. The order I built them in is as follows:
 
 1. LZO
 2. libuv
@@ -759,200 +101,37 @@ There's a complex web of optional dependencies for this one. I went with `libidn
 12. brotli
 13. curl
 
-## BLFS Git-2.37.2
+### Git-2.37.2
 
-Bit of a large dependency tree - none necessary, but I wanted to include some of them.
+Bit of a large dependency tree - none required, but I wanted to include some of them.
 
-### Dependencies that are already installed:
-* `cURL`
-* `OpenSSH`
-* `pcre2`
-* `Nettle`
-* `make-ca`
-* `libunistring`
-* `libtasn1`
-* `p11-kit`
-* `libidn2`
+**Dependencies that were already installed**
 
-### Unresolved dependency installation order:
-1. `npth`
-2. `libusb`
-3. `libgpg-error`
-4. `Pth`
-5. `Net-tools`
-6. `libassuan`
-7. `libgcrypt`
-8. `libksba`
-9. `GnuTLS`
-10. `pinentry`
-11. `GnuPG`
-12. `Git`
+* cURL
+* OpenSSH
+* pcre2
+* Nettle
+* make-ca
+* libunistring
+* libtasn1
+* p11-kit
+* libidn2
 
-## renameutils 0.12.0
+**Unresolved dependency installation order**
 
-Simple tools to bulk rename and bulk copy files:
+1. npth
+2. libusb
+3. libgpg-error
+4. Pth
+5. Net-tools
+6. libassuan
+7. libgcrypt
+8. libksba
+9. GnuTLS
+10. pinentry
+11. GnuPG
 
-* `qmv` lets you quickly move large numbers of file s using a text editor. I use it all the time.
-* `imv` lets you rename a file by editing it using `readline`
-* `qcp` and `icp` are like `qmv` and `imv`, but let you copy files instead of moving them
-* `deurlname` renames a file with url-encoded characters (like `%20`) to their plain-text equivalent.
-
-This one looked like it'd be simple enough - the instructions were to just run `./configure`, `make`, then `make install`. Unfortunately, due to a typo in the Makefile, the `make install` failed. I figured I could look into the way it was built for established distros, so on my host system, I ran `apt source renameutils` to download the source that the Pop!_OS build is made from, and found 2 patches - `install-exec-local-fix.patch` and `typo_fix.patch`. Applying those patches in that order right after extracting the `renameutils` source archive fixed it.
-
-Download link for the source tarball: https://download.savannah.gnu.org/releases/renameutils/renameutils-0.12.0.tar.gz
-MD5 Checksum for the source tarball: `a859898a25589e3b19ac8f78ddabb606`
-
-Download links for the patches:
-* https://sources.debian.org/data/main/r/renameutils/0.12.0-9/debian/patches/install-exec-local-fix.patch
-* https://sources.debian.org/data/main/r/renameutils/0.12.0-9/debian/patches/typo_fix.patch
-
-MD5 Checksum for the patches:
-`install-exec-local-fix.patch`: `61bd52097029ee1ea1d26562e457158e`
-`typo_fix.patch`:               `9c9c7e46dcf1ce00f3ad68904f6acb65`
-
-I prepended "`renameutils-` to the beginning of the names of my patches.
-
-Build instructions:
-
-```sh
-patch -Np1 ../renameutils-install-exec-local-fix.patch
-patch -Np1 ../renameutils-typo_fix.patch
-./configure                                   \
-  --prefix=/usr                               \
-  --sysconfdir=/etc                           \
-  --docdir=/usr/share/doc/renameutils-0.12.0 &&
-  make
-```
-
-Installation instructions:
-
-as *root*, run `make install`
-
-
-## BLFS Rustc-1.60.0
-
-The dependencies for this one were `cURL`, `CMake`, `libssh2`, `LLVM` (recommended), and `GDB` (optional), all of which are also in BLFS. Of those, I'd already built `cURL` and `CMake`, and `libssh2` was easy enough to build, but `LLVM` took 30 SBUs to build, and I accidentally interrupted it about 2/3 of the way through the process. Luckily, it picked up right where it left off when I tried to relaunch the build command.
-
-Reading the `rustc` docs page on bootstrapping (available [here](https://rustc-dev-guide.rust-lang.org/building/bootstrapping.html)) while it was compiling was interesting. The original version of `rustc` was written in OCaml, and future versions were written in Rust. The OCaml version is too old to use to compile a modern version of `rustc`, so now you need to acquire a fairly recent existing build to bootstrap it. This is automated by a script called `x.py` in the source tarballs for `rustc`. It works as follows.
-
-1. It downloads the latest beta build of `rustc` - this is the "stage0 compiler"
-2. It builds a minimal version of the Rust standard library ("std") with the stage0 compiler - this is the "stage0 std"
-3. It builds the dependencies of `rustc` - these are the "stage0 artifacts".
-4. It builds `rustc`, using stage0 std and stage0 artifacts - this is the "stage1 compiler"
-5. It repeats steps 2 and 3 with the "stage1 compiler" to make the "stage1 std" and "stage1 artifacts"
-6. It builds the version of `rustc` that actually gets installed using the stage1 std and stage1 artifacts - this is the "stage2 compiler"
-
-I removed the part of `/etc/profile.d/rustc.sh` that edits MANPATH, because if MANPATH is unset, it will check any `share/man` subdirectory in the same directory as a directory in the PATH, so it's not necessary, and prevents `man` from finding manpages in `/usr/share/man`.
-
-## libevent 2.1.12
-
-Libevent is a dependency for `tmux`, itself a dependency for `byobu`.
-The source archive is available at https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
-
-Building is simple:
-
-```sh
-./configure --prefix=/usr --sysconfdir=/etc --disable-static && make
-```
-
-As root:
-```sh
-make install
-```
-
-## tmux 3.3a
-
-A **t**erminal **mul**tiplexer with an uncreative name. Used as a backend by `byobu` - a "terminal window manager" I often use when multitasking.
-The source archive is available at https://github.com/tmux/tmux/releases/download/3.3a/tmux-3.3a.tar.gz
-
-```sh
-./configure --prefix=/usr --sysconfdir=/etc --docdir=/usr/share/doc/tmux-3.3a && make
-```
-
-As root:
-```sh
-make install
-```
-
-## byobu 5.133
-
-A "terminal window manager" that I like to use for multitasking. Uses either GNU `screen` or `tmux` as a backend.
-
-Source tarball: https://launchpad.net/byobu/trunk/5.133/+download/byobu_5.133.orig.tar.gz
-MD5 Checksum: 0ff03f3795cc08aae50c1ab117c03261
-
-```sh
-./configure --prefix=/usr --sysconfdir=/etc --docdir=/usr/share/doc/byobu-5.133 --localstatedir=/var
-make
-```
-
-As root:
-```sh
-make install
-```
-
-## bat 0.22.1
-
-"A cat(1) clone with wings"
-
-Source tarball: https://github.com/sharkdp/bat/archive/refs/tags/v0.22.1.tar.gz
-
-This one took some work - it's designed to be built with `cargo`, which is a tool for both managing packages and dependencies for rust programs. I ultimately got it working with the following:
-
-```sh
-cargo build --release --bins --locked
-sed -e 's/{{PROJECT_EXECUTABLE}}/bat/g' -e 's/{{PROJECT_EXECUTABLE_UPPERCASE}}/BAT/g' assets/manual/bat.1.in > assets/manual/bat.1
-sudo strip target/release/bat -o /usr/bin/bat
-sudo cp assets/manual/bat.1 /usr/share/man/man1
-```
-
-Explanation:
-* `cargo build`: download dependencies from the official Rust Crates archive to the local registry and build
-* `--release`: enable optimizations that can complicate debugging
-* `--bins`: build all binaries
-* `--locked`: use the same versions of dependencies as the upstream build
-
-## hexyl 0.12.0
-
-A hexdump utility with colors and fancy output
-
-Source tarball: https://github.com/sharkdp/hexyl/archive/refs/tags/v0.12.0.tar.gz
-
-```sh
-cargo build --release --bins --locked
-sudo strip target/release/hexyl -o /usr/bin/hexyl
-```
-
-## fd 8.6.0
-
-An alternative to `find` that's easier to use and has saner defaults
-
-Source tarball: https://github.com/sharkdp/fd/archive/refs/tags/v8.6.0.zip
-
-```sh
-cargo build --release --bins --locked
-sudo strip target/release/fd -o /usr/bin/fd
-sudo cp doc/fd.1 /usr/share/man/man1
-```
-
-## Hed [Commit 44d3eb70dc62a1bdd2ae0f84f5993d654a73799c]
-
-A simple vi-like hex editor with minimal dependencies
-
-This one's designed to install from the `master` branch. Not great practice, but whatever.
-
-```sh
-git clone https://github.com/fr0zn/hed && cd hed
-# ensure you're on the same commit I was working from
-git checkout 44d3eb
-# fix hard-coded paths in the Makefile
-sed 's@local/@@g' -i Makefile
-make
-sudo make install
-```
-***Full Disclosure:*** *I have contributed a commit to adjust the hard-coded paths in the Makefile to be more consistent. Originally, it installed the binary to `/usr/bin/hed` and the man page to `/usr/local/share/man/man1`. I edited the Makefile to install both to the `/usr/local` prefix, so had I done the opposite, the `sed` command would not be needed. I opened the request on August 26th, but it was not merged until December 11th.*
-
-## BLFS Linux-PAM-1.5.2
+### Linux-PAM-1.5.2
 
 I messed up this one.
 
@@ -965,178 +144,60 @@ I compiled Linux-PAM, then I recompiled the following to use it:
 
 Unfortunately, I messed up the order, and couldn't do anything that required root privileges.
 
-I had to mount the LFS qcow2 hard drive with `guestmount` and chroot in to fix the configuration files at `/etc/pam.d`.
+I had to mount the LFS VM's qcow2 hard drive from the host system with `guestmount` and chroot in to fix the configuration files at */etc/pam.d*.
 
-## Newt-r0-52-23 + dependencies
+### Rustc-1.60.0
 
-The `byobu-config` script bundled with `byobu` and used to configure it has a runtime dependency on snack.
+I removed the part of */etc/profile.d/rustc.sh* that edits MANPATH, because if MANPATH is unset, it will check any *share/man* subdirectory in the same directory as a directory in the PATH, so it's not necessary, and prevents `man` from finding manpages in */usr/share/man*.
 
-Newt is a text-mode windowing toolkit written in C, and snack is a bundled Python module that interfaces with it. It is not the same as the snack on the Python Package Index.
+### Polkit-121
 
-Newt has a bit of a dependency tree I had to work out, with some dependencies already resolved, some included in BLFS, and some that I had to track down on the internet.
+Dependency of UPower, which is a dependency of xfce4-power-manager. Failed to build because it detected libxslt, but could not build the man pages without docbook-xml and docboc-xml-nons. There's a note about it in BLFS (which I overlooked), which says to pass the `-Dman=false` argument to `meson` to avoid the issue. I was able to fix it by re-running the `meson` command with `-Dman=true` replaced with `-Dman=false` and `--reconfigure` added to the command.
 
-Text diagram of Newt's tree of unresolved dependencies:
-```
-Newt
-| |
-| popt
-|
-S-lang
- | | \
- | | PCRE
- | |
- | oniguruma
- |
- libpng
-```
+### UPower-1.90.0
 
-popt is a library for parsing command line arguments.
+Required a kernel built with `CONFIG_USER_NS=y`, so I had to rebuild the kernel. The result was `5.19.2-eliminmax-2`.
 
-S-lang (or slang) is an interpreted language meant to be embedded into a program, much like lua. It has optional dependencies on PCRE, libpng, oniguruma, and zlib. Not knowing which of those were needed by newt, and that libpng and PCRE are also dependencies of other things I wanted to install, I figured I'd just install the 3 that were not already part of the base LFS system.
+### Mesa
 
-PCRE is a library providing **P**erl **C**ompatible **R**egular **E**xpressions. It has been officially deprecated in favor of pcre2, but it is still in use.
+I didn't apply the patch, because I misread the description more carefully. I thought it only was needed for the test suite, which I skipped.
 
-onigmura is a regex library that provides several different regex variants.
-
-libpng is the official PNG reference library
-
-Non-BLFS Source tarballs:
-* popt: https://ftp.osuosl.org/pub/rpm/popt/releases/popt-1.x/popt-1.19.tar.gz
-* oniguruma: https://github.com/kkos/oniguruma/releases/download/v6.9.8/onig-6.9.8.tar.gz
-* s-lang: https://www.jedsoft.org/releases/slang/slang-2.3.3.tar.bz2
-* newt: https://pagure.io/newt/archive/r0-52-23/newt-r0-52-23.tar.gz
-
-At this point, I decided that moving forward, if I could get the following to work, I would not explicitly memtion the build/install process. Not all of the arguments are needed for all software, but they won't hurt.
+I later rebuilt it with the patch, but also added another patch to fix an issue it has with virgl. The final build is as follows:
 
 ```sh
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/"$(basename "$PWD")"
-make
-sudo make install
+# After acquiring the source and patches from the BLFS book
+wget https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/18477.patch -O mesa-virgl-18477.patch
+tar xf mesa-22.1.7.tar.xz
+cd mesa-22.1.7
+patch -Np1 -i ../mesa-virgl-18477.patch
+patch -Np1 -i ../mesa-22.1.7-add_xdemos-1.patch
+mkdir build && cd build &&
+meson --prefix=$XORG_PREFIX \
+  --buildtype=release       \
+  -Dlibdir=/usr/lib         \
+  -Dbackend=ninja           \
+  -Dstrip=true              \
+  -Ddebug=false             \
+  -Dplatforms=x11,wayland   \
+  -Dgallium-drivers=auto    \
+  -Dglx=dri                 \
+  -Dvalgrind=disabled       \
+  -Dlibunwind=disabled      \
+  ..                        &&
+ninja && sudo ninja install
 ```
 
-So yeah, I built all of the dependencies for the runtime dependency for `byobu-config`.
+### libtiff-4.4.0
 
-## BLFS GLib-2.72.3
-
-The option `-Dman=true` caused the build to fail for me. Replacing it with `-Dman=false` fixed it, at the cost of not getting man pages
-
-## Graphical Enviroment
-
-### BLFS Xorg-7
-
-I followed the instructions on the following pages from the BLFS section titled "Part VI. Graphical Components", with any differences or difficulties noted:
-
-* Introduction to Xorg-7
-* util-macros-1.19.3
-* xorgproto-2022.2
-* libXau-1.0.9
-* libXdmcp-1.1.3
-* xcb-proto-1.15.2
-* libxcb-1.15
-* Xorg Libraries
-  * depends on Fontconfig, which I had yet to build, so before building, I built FreeType (without HarfBuzz, but with libpng, which, and Brotli), then Fontconfig, then followed the instructions on this page
-* libxcvt-0.1.2
-* xcb-util-0.4.0
-  * suddenly, I couldn't connect to freedesktop.org (or any subdomains) from my LFS system. Not sure why - it could connect to other domains, and the host system could connect to it, but it eventually passed.
-* Mesa-22.1.7
-  * Had to go through the dependency tree, and installed all that were listed as either required or recommended
-  * All libraries that had been built with `meson` had been installed to `/lib64`, and were not being picked up.
-    * I messed uo fixing this several times, and had to rebuild several times to fix this. From now on, whenever building something with `meson`, I'm passing the following extra arguments to it no matter what: `-Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false`
-  * To resolve the circular dependency between Mesa and libva, I first built libva, then intel-vaapi-driver, then Mesa, then I rebuilt each of them again.
-    * before the second libva build, I ran `make distclean` and re-ran the configuration process.
-    * `make distclean` actually removed a critical file from the intel-vaapi-driver directory, so I re-extracted the source tarball for the second build.
-    * for the second Mesa build, I returned to the "build" subdirectory, and re-ran the `meson` command with the `--reconfigure` command
-      * This had the benifit of only needing to rebuild 22 of the over 2000 objects built the first time around
-* xbitmaps-1.1.2
-* Xorg Applications
-  * Failed when it came time to build xbacklight because xcb-atom and xcb-aux were not found. Rebuilding and reinstalling xcb-util fixed this.
-  * Instead of using the `as_root` shell function from the BLFS book, I just replaced `as_root` with `sudo`.
-* Xorg Fonts
-  * I once again replaced `as_root` with `sudo`
-* XKeyboardConfig-2.36
-* Xorg-Server-21.1.4
-  * Had to go down the dependency tree. Like with Mesa, if it's either required or recommended, I built it.
-    * There were 3 dependencies not already installed - Pixman, libepoxy, and libtirpc. None of them had required or recommended dependencies, and no issues came up when building them.
-* Xorg Libinput Driver-1.2.1 from Xorg Drivers
-* xterm-372
-
-### Xorg Drivers and Userland QEMU Guest utilities
-
-At this point, I was trying to figure out what the needed drivers for my hardware were, and discovered that I'd need kernel features not included in my existing kernel configuration. I then rebuilt the kernel with new options.
-
-Finding out what to build and how to build it was a pain. I was able to find some work-in-progress BLFS pages [here](https://wiki.linuxfromscratch.org/blfs/wiki/qemu), but they were out of date, and the build process for spice-protocols had been changed.
-
-#### spice-protocol
-
-```sh
-wget 'https://gitlab.freedesktop.org/spice/spice-protocol/-/archive/v0.14.4/spice-protocol-v0.14.4.tar.bz2'
-tar -xf spice-protocol-v0.14.4.tar.bz2
-cd spice-protocol-v0.14.4
-mkdir build && cd build
-meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=release --prefix=/usr ..
-sudo ninja install
-```
-
-#### usbredir
-
-* Depends on libusb and GLib. GLib requires libxslt, which in turn requires libxml2. All of those are covered in BLFS.
-
-```sh
-wget https://www.spice-space.org/download/usbredir/usbredir-0.13.0.tar.xz
-tar -xf usbredir-0.13.0.tar.xz
-cd usbredir-0.13.0
-mkdir build && cd build
-meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=release --prefix=/usr ..
-ninja
-sudo ninja install
-```
-
-#### xf86-video-qxl
-
-* Depends on spice-protocol and xorg-server
-
-Has not had a release in years, and segfaults on modern versions of xorg. The Git repository is active, and patches to fix the issue are available.
-
-The following works currently, as of upstream git commit `52e975263fe88105d151297768c7ac675ed94122`.
-
-```sh
-git clone https://gitlab.freedesktop.org/xorg/driver/xf86-video-qxl.git
-cd xf86-video-qxl
-git remote add jmbreuer https://gitlab.freedesktop.org/jmbreuer/xf86-video-qxl.git
-git fetch jmbreuer
-git merge jmbreuer/fix-xorg-server-21
-./autogen.sh
-./configure $XORG_CONFIG
-make
-sudo make install
-```
-
-#### spice-vdagent
-
-* Depends on spice-protocol, alsa-lib, and libinput, and libinput in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa-lib and mtdev has their own BLFS pages.
-
-```sh
-wget https://www.spice-space.org/download/releases/spice-vdagent-0.22.1.tar.bz2
-tar -xf spice-vdagent-0.22.1.tar.bz2
-cd spice-vdagent-0.22.1
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/spice-vdagent-0.22.1 --with-init-script=systemd
-make
-sudo make install
-```
-
-### BLFS GTK+-3.24.34 + dependencies
-
-Once again, if a dependency was required or recommended, I built it.
-
-#### libtiff-4.4.0
-
-Recommended dependency of gdk-pixbuf, which in turn is a required dependency of GTK+ 3.
+Recommended dependency of gdk-pixbuf, which in turn is a required dependency of GTK+ 3. Part of the dependency tree for
 
 Originally built according to the BLFS instructions, but that installed the libraries to /usr/lib64, but I want all libraries installed to /usr/lib.
 
 I then deleted all of the files it installed, and rebuilt and reinstalled it with the GNU tools (i.e. `/configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/tiff-4.4.0 --libdir=/usr/lib && make && sudo make install`)
 
-#### librsvg-2.54.4
+### librsvg-2.54.4
+
+Recommended runtime dependency for gdk-pixbuf
 
 The `make install` job for this requires `cargo`, which is installed to /opt/rustc/bin. When running `sudo`, the PATH is altered, so it failed to install because `/opt/rustc/bin` was removed from the path. I fixed it by editing the sudoers configuration with `sudo visudo`, and uncommented the `Defaults secure_path` line, and edited it as follows:
 
@@ -1146,58 +207,410 @@ Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/rus
 
 After that, it worked fine.
 
-#### ISO Codes-4.11.0
+# External software
 
-The download was no longer available. Replaced it with version 4.12.0.
+The software listed here was not from the BLFS book. For each piece of software, I have a shell snippet that should build and install it. That said, I make no promises. I also assume you have an LFS system with Git, Sudo, and Wget installed. The snippets are designed with the assumption that every command succeeds, so it should be run in a `bash -e` shell, so that it exits on error. Note that I did not run the code snippets myself - I made them afterwards by retracing my steps.
 
-## Miscellaneous software
+## renameutils 0.12.0
 
-### From BLFS
+Simple tools to bulk rename and bulk copy files:
 
-* lsof-4.95.0
+* `qmv` lets you quickly move large numbers of file s using a text editor. I use it all the time.
+* `imv` lets you rename a file by editing its name using `readline`
+* `qcp` and `icp` are like `qmv` and `imv`, but let you copy files instead of moving them
+* `deurlname` renames a file, replacing URL-encoded characters (like `%20`) with their plain-text equivalent.
 
-#### Python Modules
+This one looked like it'd be simple enough - the instructions were to just run `./configure`, `make`, then `make install`. Unfortunately, due to a typo in the Makefile, the `make install` failed. I figured I could look into the way it was built for established distros, so on my host system, I ran `apt source renameutils` to download the source that the Pop!_OS build is made from, and found 2 patches - `install-exec-local-fix.patch` and `typo_fix.patch`. Applying those patches in that order right after extracting the `renameutils` source archive fixed it.
 
-* asciidoc
+Build instructions:
 
-### From Elsewhere
+```sh
+wget https://download.savannah.gnu.org/releases/renameutils/renameutils-0.12.0.tar.gz
+wget https://sources.debian.org/data/main/r/renameutils/0.12.0-9/debian/patches/install-exec-local-fix.patch -O renameutils-install-exec-local-fix.patch
+wget https://sources.debian.org/data/main/r/renameutils/0.12.0-9/debian/patches/typo_fix.patch -O renameutils-typo_fix.patch
+tar xf renameutils-0.12.0.tar.gz
+cd renameutils-0.12.0
+patch -Np1 ../renameutils-install-exec-local-fix.patch
+patch -Np1 ../renameutils-typo_fix.patch
+./configure                                   \
+  --prefix=/usr                               \
+  --sysconfdir=/etc                           \
+  --docdir=/usr/share/doc/renameutils-0.12.0 &&
+  make
+sudo make install
+```
 
-#### Nerd Fonts v2.2.2
+## libevent 2.1.12
+
+Libevent is a dependency for `tmux`, itself a dependency for `byobu`.
+The source archive is available at https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
+
+Building is simple:
+
+```sh
+wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
+tar xf libevent-2.1.12-stable.tar.gz
+cd libevent-2.1.12-stable
+./configure --prefix=/usr --sysconfdir=/etc --disable-static
+make
+sudo make install
+```
+
+## tmux 3.3a
+
+A **t**erminal **mul**tiplexer with an uncreative name. Used as a back-end by `byobu` - a "terminal window manager" I often use when multitasking.
+
+```sh
+wget https://github.com/tmux/tmux/releases/download/3.3a/tmux-3.3a.tar.gz
+tar xf tmux-3.3a.tar.gz
+cd tmux-3.3a
+./configure --prefix=/usr --sysconfdir=/etc --docdir=/usr/share/doc/tmux-3.3a
+make
+sudo make install
+```
+
+## byobu 5.133
+
+A "terminal window manager" that I like to use for multitasking. Uses either GNU `screen` or `tmux` as a back-end. The `byobu-config` script has runtime dependency on snack, a part of the newt package, which depends on popt and s-lang. S-lang (a.k.a. slang) has optional dependencies on PCRE, libpng, oniguruma, and zlib. Zlib is part of the base LFS system, and PCRE and libpng are in BLFS. Once the dependencies covered in B/LFS are built, you can run the following to build byobu and its runtime dependencies.
+
+```sh
+wget https://ftp.osuosl.org/pub/rpm/popt/releases/popt-1.x/popt-1.19.tar.gz
+wget https://github.com/kkos/oniguruma/releases/download/v6.9.8/onig-6.9.8.tar.gz
+wget https://www.jedsoft.org/releases/slang/slang-2.3.3.tar.bz2
+wget https://pagure.io/newt/archive/r0-52-23/newt-r0-52-23.tar.gz
+wget https://launchpad.net/byobu/trunk/5.133/+download/byobu_5.133.orig.tar.gz
+
+tar -xf popt-1.19.tar.gz
+pushd popt-1.19
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/popt-1.19
+make
+sudo make install
+popd
+
+tar xf onig-6.9.8.tar.gz
+pushd onig-6.9.8
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/onig-6.9.8
+make
+sudo make install
+popd
+
+tar xf slang-2.3.3.tar.bz2
+pushd slang-2.3.3
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/slang-2.3.3
+make
+sudo make install
+popd
+
+tar xf newt-r0-52-23.tar.gz
+pushd newt-r0-52-23
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/newt-40-52-23
+make
+sudo make install
+popd
+
+tar xf byobu_5.133.orig.tar.gz
+cd byobu_5.133
+./configure --prefix=/usr --sysconfdir=/etc --docdir=/usr/share/doc/byobu-5.133 --localstatedir=/var
+make
+sudo make install
+```
+
+## Nerd Fonts v2.2.2
 
 Fonts patched to have symbols useful in various nerdy contexts - such as Linux distro logos, file type icons, and fancy prompt components.
 
-From [version 2.2.2's release assets](https://github.com/ryanoasis/nerd-fonts/releases/tag/v2.2.2):
-* Extracted from UbuntuMono.zip:
-  * Ubuntu Mono Bold Italic Nerd Font Complete Mono.ttf
-  * Ubuntu Mono Bold Nerd Font Complete Mono.ttf
-  * Ubuntu Mono Italic Nerd Font Complete Mono.ttf
-  * Ubuntu Mono Nerd Font Complete Mono.ttf
-* Extracted from VictorMono.zip:
-  * Victor Mono Light Nerd Font Complete Mono.ttf
-  * Victor Mono Medium Oblique Nerd Font Complete Mono.ttf
-  * Victor Mono SemiBold Nerd Font Complete Mono.ttf
-  * Victor Mono Thin Nerd Font Complete Mono.ttf
-  * Victor Mono ExtraLight Nerd Font Complete Mono.ttf
-  * Victor Mono Light Oblique Nerd Font Complete Mono.ttf
-  * Victor Mono Thin Oblique Nerd Font Complete Mono.ttf
-  * Victor Mono SemiBold Oblique Nerd Font Complete Mono.ttf
-  * Victor Mono Oblique Nerd Font Complete Mono.ttf
-  * Victor Mono Bold Oblique Nerd Font Complete Mono.ttf
-  * Victor Mono Italic Nerd Font Complete Mono.ttf
-  * Victor Mono Light Italic Nerd Font Complete Mono.ttf
-  * Victor Mono SemiBold Italic Nerd Font Complete Mono.ttf
-  * Victor Mono Bold Italic Nerd Font Complete Mono.ttf
-  * Victor Mono Medium Italic Nerd Font Complete Mono.ttf
-  * Victor Mono Bold Nerd Font Complete Mono.ttf
-  * Victor Mono ExtraLight Oblique Nerd Font Complete Mono.ttf
-  * Victor Mono Regular Nerd Font Complete Mono.ttf
-  * Victor Mono Thin Italic Nerd Font Complete Mono.ttf
-  * Victor Mono ExtraLight Italic Nerd Font Complete Mono.ttf
-  * Victor Mono Medium Nerd Font Complete Mono.ttf
+```sh
+wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/VictorMono.zip
+wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/UbuntuMono.zip
+mkdir nerdfonts
+cd nerdfonts
+unzip ../VictorMono.zip
+yes n | unzip ../UbuntuMono.zip
+# remove unneeded files and variants
+rm readme.md LICENSE *Windows\ Compatible.ttf *Complete.ttf
+sudo install -v -dm755 /usr/share/fonts/X11-TTF
+sudo cp * /usr/share/fonts/X11-TTF
+```
+
+## lshw B.02.19.2
+
+Simple tool to list hardware info.
+```sh
+wget https://www.ezix.org/software/files/lshw-B.02.19.2.tar.gz
+tar xf lshw-B.02.19.2.tar.gz
+cd lshw-B.02.19.2
+make
+sudo make install
+sudo mv /usr/share/man/man1/lshw.1 /usr/share/man/man8/lshw.8
+sudo sed -i '/^\.TH/s/"1"/"8"/' /usr/share/man/man8/lshw.8
+```
+
+Installs the `lshw` binary to /usr/sbin, as well as other related files.
+
+The `sed` command at the end fixes the man page section.
+
+## bat 0.22.1
+
+Source tarball: https://github.com/sharkdp/bat/archive/refs/tags/v0.22.1.tar.gz
+
+```sh
+wget https://github.com/sharkdp/bat/archive/refs/tags/v0.22.1.tar.gz -O bat-0.22.1.tar.gz
+tar xf bat-0.22.1.tar.gz
+cd bat-0.22.1
+cargo build --release --bins --locked
+sed -e 's/{{PROJECT_EXECUTABLE}}/bat/g' -e 's/{{PROJECT_EXECUTABLE_UPPERCASE}}/BAT/g' assets/manual/bat.1.in > assets/manual/bat.1
+sudo strip target/release/bat -o /usr/bin/bat
+sudo cp assets/manual/bat.1 /usr/share/man/man1
+```
+
+Explanation:
+
+* `cargo build`: download dependencies from the official Rust Crates archive to the local registry and build
+* `--release`: enable optimizations that can complicate debugging
+* `--bins`: build all binaries
+* `--locked`: use the same versions of dependencies as the upstream build
+
+## hexyl 0.12.0
+
+A hex-dump utility with colors and fancy output
+
+```sh
+wget https://github.com/sharkdp/hexyl/archive/refs/tags/v0.12.0.tar.gz -O hexyl-0.12.0.tar.gz
+tar xf hexyl-0.12.0.tar.gz
+cd hexyl-0.12.0
+cargo build --release --bins --locked
+sudo strip target/release/hexyl -o /usr/bin/hexyl
+```
+
+## fd 8.6.0
+
+An alternative to `find` that's easier to use and has saner defaults
+
+```sh
+wget https://github.com/sharkdp/fd/archive/refs/tags/v8.6.0.tar.gz -O fd-8.6.0.tar.gz
+tar xf fd-8.6.0.tar.gz
+cd fd-8.6.0
+cargo build --release --bins --locked
+sudo strip target/release/fd -o /usr/bin/fd
+sudo cp doc/fd.1 /usr/share/man/man1
+```
+
+## Hed [Commit 44d3eb7]
+
+A simple vi-like hex editor with minimal dependencies
+
+This one's designed to install from the `master` branch. Not great practice, but whatever.
+
+```sh
+git clone https://github.com/fr0zn/hed hed-44d3eb7
+cd hed-44d3eb7
+# ensure you're on the same commit I was working from
+git checkout 44d3eb7
+# fix hard-coded paths in the Makefile
+sed 's@local/@@g' -i Makefile
+make
+sudo make install
+# create source tarball for safekeeping
+cd ..
+tar --exclude-vcs --exclude-vcs-ignores -czvf hed-44d3eb7.tar.gz hed-44d3eb7
+```
+
+
+## Xorg Drivers and Guest utilities
+
+This section contains Xorg drivers not from B/LFS, as well as assorted tools to allow for better performance of the LFS system, and better interaction with the host system.
+
+Finding out what Xorg drivers to build, and how to build them, was a pain. I was able to find some work-in-progress BLFS pages [here](https://wiki.linuxfromscratch.org/blfs/wiki/qemu), but they were out of date, and the build process for spice-protocols had been changed.
+
+### spice-protocol
+
+```sh
+wget https://gitlab.freedesktop.org/spice/spice-protocol/-/archive/v0.14.4/spice-protocol-v0.14.4.tar.bz2
+tar xf spice-protocol-v0.14.4.tar.bz2
+cd spice-protocol-v0.14.4
+mkdir build && cd build
+meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=release --prefix=/usr ..
+sudo ninja install
+```
+
+### usbredir
+
+* Depends on libusb and GLib. GLib requires libxslt, which in turn requires libxml2. All of those are covered in BLFS.
+
+```sh
+wget https://www.spice-space.org/download/usbredir/usbredir-0.13.0.tar.xz
+tar xf usbredir-0.13.0.tar.xz
+cd usbredir-0.13.0
+mkdir build && cd build
+meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=release --prefix=/usr ..
+ninja
+sudo ninja install
+```
+
+### SPICE (Server) + Dependencies
+
+To quote the README:
+
+> SPICE is a remote display system built for virtual environments which
+> allows you to view a computing 'desktop' environment not only on the
+> machine where it is running, but from anywhere on the Internet and
+> from a wide variety of machine architectures.
+
+* Depends on spice-protocol, Pixman, OpenSSL, libjpeg, and zlib for core functionality. Optional dependencies are Cyrus-SASL, libcacard, Opus, LZ4, and GStreamer. The base LFS system has OpenSSL and zlib. BLFS has pages on libjpeg-turbo (which works as libjpeg), Pixman, GStreamer, and Opus. That leaves lz4, Cyrus-SASL, libcacard, and the previously-built spice-protocol.
+
+libcacard is used to provide virtual smart cards, which I do not intend to use. I did build it with the other dependencies.
+
+SPICE, along with the remaining dependencies from outside of B/LFS, can be built as follows:
+
+```sh
+wget https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-2.1.28/cyrus-sasl-2.1.28.tar.gz
+tar xf cyrus-sasl-2.1.28.tar.gz
+pushd cyrus-sasl-2.1.28
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/"$(basename "$PWD")"
+make
+sudo make install
+popd
+wget https://github.com/lz4/lz4/archive/refs/tags/v1.9.4.tar.gz -O lz4-1.9.4.tar.gz
+tar xf lz4-1.9.4.tar.gz
+pushd lz4-1.9.4
+make
+sudo make PREFIX=/usr install
+# delete static lib
+sudo rm /usr/lib/liblz4.a
+popd
+wget https://gitlab.freedesktop.org/spice/spice/uploads/5b40fad4ec02e7983c182a24266541f5/spice-0.15.1.tar.bz2
+tar xf spice-0.15.1.tar.bz2
+cd spice-0.15.1
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/"$(basename "$PWD")" --enable-gstreamer=/usr/lib/libgstreamer-1.0.so
+make
+sudo make install
+```
+
+Note that it fails to detect GStreamer on my system unless I manually specify the path as shown above.
+
+### xf86-video-qxl + xspice
+
+* Depends on spice-protocol and xorg-server, with an optional dependency on SPICE (the spice server) for the xspice functionality, which I use.
+
+Has not had a release in years, and segfaults on modern versions of xorg. The Git repository is active, and patches to fix the issue are available.
+
+The following works currently, as of upstream git commit `52e975263fe88105d151297768c7ac675ed94122`.
+
+```sh
+git clone https://gitlab.freedesktop.org/xorg/driver/xf86-video-qxl.git
+pushd xf86-video-qxl
+git remote add jmbreuer https://gitlab.freedesktop.org/jmbreuer/xf86-video-qxl.git
+git fetch jmbreuer
+git merge jmbreuer/fix-xorg-server-21
+./autogen.sh
+./configure $XORG_CONFIG --enable-xspice=yes
+make
+sudo make install
+popd
+# Create a source tarball for safekeeping
+tar cvzf xf86-video-qxl.tar.gz --exclude-vcs --exclude-vcs-ignores xf86-video-qxl
+# point the /usr/bin/X symlink to Xspice
+sudo ln -sf Xspice /usr/bin/X
+```
+
+### spice-vdagent
+
+* Depends on spice-protocol, alsa-lib, and libinput, and libinput in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa-lib and mtdev have their own BLFS pages.
+
+```sh
+wget https://www.spice-space.org/download/releases/spice-vdagent-0.22.1.tar.bz2
+tar xf spice-vdagent-0.22.1.tar.bz2
+cd spice-vdagent-0.22.1
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/spice-vdagent-0.22.1 --with-init-script=systemd
+make
+sudo make install
+```
+
+#### QEMU Guest Agent
+
+This one was not in the WIP BLFS page linked earlier. I came up with it myself by referencing the QEMU docs and the metadata and contents of the **qemu-guest-agent** package in [Martin Wimpress's quickemu PPA on launchpad](https://launchpad.net/~flexiondotorg/+archive/ubuntu/quickemu/+packages).
+
+I decided to build version 7.0.0, because it matches the version of QEMU on the host system. I don't know if that was needed, but it can't hurt. Depends on liburing2, a library that provides a simplified interface to the Linux kernel's io_uring functionality. I don't know what that means, but whatever.
+Build and install liburing2 and qemu-ga:
+
+```sh
+wget https://github.com/axboe/liburing/archive/refs/tags/liburing-2.3.tar.gz
+tar xf liburing-2.3.tar.gz
+pushd liburing-liburing-2.3
+./configure --prefix=/usr --libdir=/usr/lib --mandir=/usr/share/man
+make
+sudo make install
+sudo strip /usr/lib/liburing.so.2.3
+popd
+wget https://download.qemu.org/qemu-7.0.0.tar.xz
+tar xf qemu-7.0.0.tar.xz
+pushd qemu-7.0.0
+./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --libdir=/usr/lib --docdir=/usr/share/doc/"$(basename "$PWD")" --without-default-features --enable-guest-agent --without-default-devices
+make qemu-ga
+sudo strip build/qga/qemu-ga -o /usr/sbin/qemu-ga
+popd
+sudo dd of=/usr/lib/systemd/system/qemu-guest-agent.service <<EOF
+[Unit]
+Description=QEMU Guest Agent
+BindsTo=dev-virtio\x2dports-org.qemu.guest_agent.0.device
+After=dev-virtio\x2dports-org.qemu.guest_agent.0.device
+
+[Service]
+ExecStart=-/usr/sbin/qemu-ga
+Restart=always
+RestartSec=0
+
+[Install]
+EOF
+
+sudo dd of=/usr/lib/udev/rules.d/60-qemu-guest-agent.rules <<EOF
+SUBSYSTEM=="virtio-ports", ATTR{name}=="org.qemu.guest_agent.0",  TAG+="systemd" ENV{SYSTEMD_WANTS}="qemu-guest-agent.service"
+EOF
+```
+
+After rebooting the system, the QEMU guest agent ran just fine
+
+
+# Software updates
+
+Newer versions of software installed previously as part of B/LFS
+
+Mostly updated because of security vulnerabilities mentioned on the page listing [LFS and BLFS Security Advisories from September 2020 onwards](https://linuxfromscratch.org/blfs/advisories/consolidated.html)
+
+* Linux 6.1.1
+* libksba-1.6.3
+* libtiff-4.4.0
+  * rebuilt with a patch added from the development version of BLFS to fix security vulnerabilities, and with the additional option `-DCMAKE_INSTALL_LIBDIR=/usr/lib`
+* curl-7.86.0
+* Python-3.11.1
+  * After updating I had to rebuild the following modules:
+    * asciidoc
+    * docutils
+    * Jinja2
+    * LSB-Tools
+    * Mako
+    * MarkupSafe
+    * meson
+    * Pygments
+    * PyYAML
+    * wheel
+  * In addition, I had to rebuild the following packages that provide python modules:
+    * newt (not from B/LFS, mentioned earlier)
+    * gobject-introspection
+    * xcb-proto
+* Sudo-1.9.12p1
+* git-2.39.0
+* xorg-server-21.1.6
+* xfce4-settings-4.16.5
+* polkit-122
+  * polkit-121 has a hard-coded list of supported Javascript engines, and the supported Mozilla JS engine, the one included in BLFS, reached end-of-life in September 2022, and has a known use-after-free vulnerability which can cause a "potentially exploitable crash." ([CVE-2022-45406](https://nvd.nist.gov/vuln/detail/CVE-2022-45406))
 
 # Miscellaneous Issues
 
+The first two entries of this are from my original build notes, but after that, I've added a few new ones.
+
 ## End of chapter 8 crisis
+
 At the end of chapter 8, in **8.79. Stripping**, I blindly copied in the commands that it listed, and that turned out to be a major problem, because I updated zlib to version 1.
 2.13, and it was set up to skip stripping a list of hard-coded libraries, which was still on 1.2.12. The `strip` binary depends on zlib, and somehow, when trying to strip its own dependency, `/usr/lib/libz.so.1.2.13` was overwritten, and was now an empty file. I had deleted the old zlib build directory, and had to restart from step one, but the `./configure` command failed without zlib already available. What I wound up doing was leaving the chroot environment, copying `/usr/lib/libz.so.1.2.11` from the build VM to the chroot, pointing the `/usr/lib/libz.so` and `/usr/lib/libz.so.1` symlinks to that, and rebuilding zlib, reverting the symlinks, rebuilding it yet again, then confirming that the one build with zlib 1.2.11 and the one build with zlib 1.2.13 were byte-for-byte identical.
 
@@ -1219,3 +632,56 @@ It took me a bit of experimentation to find a kernel configuration that worked, 
 ## SSH X forwarding
 
 Turns out that I should have read the page on OpenSSH more carefully and/or planned ahead better. I needed to point it to the `xauth` binary in the sshd_config file, but if I'd passed the `--with-xauth=/usr/bin/xauth` flag, that wouldn't be needed. Was an easy fix regardless.
+
+## Kernel config woes (again)
+
+When rebuilding the kernel for UPower, when adjusting the included drivers, I managed to accidentally remove the drivers used by the VM. The VM saw the drive as a SATA device. I removed the drive from the VM, and re-added it as a virtio drive. This not only worked fine, but also improves performance.
+
+
+## Locale
+
+`localectl` wasn't working, so I wound up manually writing the following to /etc/locale.conf:
+
+```
+LANG=en_US.UTF-8
+LC_ADDRESS=en_US.UTF-8
+LC_CTYPE=en_US.UTF-8
+LC_MEASUREMENT=en_US.UTF-8
+LC_MONETARY=en_US.UTF-8
+LC_NUMERIC=en_US.UTF-8
+LC_TELEPHONE=en_US.UTF-8
+LANGUAGE=en_US.UTF-8
+LC_COLLATE=en_US.UTF-8
+LC_IDENTIFICATION=en_US.UTF-8
+LC_MESSAGES=en_US.UTF-8
+LC_NAME=en_US.UTF-8
+LC_PAPER=en_US.UTF-8
+LC_TIME=en_US.UTF-8
+```
+
+Additionally, I created `/etc/profile.d/locale.sh`, which I based on the same file in an Arch Linux VM (appropriately called "btw"). The only change I made was changing the fallback locale from `C` to `C.UTF-8`. Its contents are as follows:
+
+```sh
+#!/bin/sh
+
+# load locale.conf in XDG paths.
+# /etc/locale.conf loads and overrides by kernel command line is done by systemd
+# But we override it here, see FS#56688
+if [ -z "$LANG" ]; then
+  if [ -n "$XDG_CONFIG_HOME" ] && [ -r "$XDG_CONFIG_HOME/locale.conf" ]; then
+    . "$XDG_CONFIG_HOME/locale.conf"
+  elif [ -n "$HOME" ] && [ -r "$HOME/.config/locale.conf" ]; then
+    . "$HOME/.config/locale.conf"
+  elif [ -r /etc/locale.conf ]; then
+    . /etc/locale.conf
+  fi
+fi
+
+# define default LANG to C.UTF-8 if not already defined
+LANG=${LANG:-C.UTF-8}
+
+# export all locale (7) variables when they exist
+export LANG LANGUAGE LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY \
+       LC_MESSAGES LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT \
+       LC_IDENTIFICATION
+```
