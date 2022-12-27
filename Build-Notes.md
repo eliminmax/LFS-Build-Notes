@@ -41,7 +41,7 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
     + [SPICE (Server) + Dependencies](#spice-server--dependencies)
     + [xf86-video-qxl + xspice](#xf86-video-qxl--xspice)
     + [spice-vdagent](#spice-vdagent)
-      - [QEMU Guest Agent](#qemu-guest-agent)
+    + [QEMU Guest Agent](#qemu-guest-agent)
 - [Software updates](#software-updates)
 - [Miscellaneous Issues](#miscellaneous-issues)
   * [End of chapter 8 crisis](#end-of-chapter-8-crisis)
@@ -526,7 +526,7 @@ make
 sudo make install
 ```
 
-#### QEMU Guest Agent
+### QEMU Guest Agent
 
 This one was not in the WIP BLFS page linked earlier. I came up with it myself by referencing the QEMU docs and the metadata and contents of the **qemu-guest-agent** package in [Martin Wimpress's quickemu PPA on launchpad](https://launchpad.net/~flexiondotorg/+archive/ubuntu/quickemu/+packages).
 
