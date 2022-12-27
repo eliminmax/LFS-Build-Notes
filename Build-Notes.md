@@ -399,7 +399,7 @@ sudo cp doc/fd.1 /usr/share/man/man1
 
 A simple vi-like hex editor with minimal dependencies
 
-This one's designed to install from the `master` branch. Not great practice, but whatever.
+This one's designed to install from the `master` branch.
 
 ```sh
 git clone https://github.com/fr0zn/hed hed-44d3eb7
