@@ -1,0 +1,9 @@
+#/dev/vdb1: PARTUUID="36b65e60-bf70-e746-b4d6-fb254f1e0397"
+#/dev/vdb2: UUID="f910cc92-a9c9-4492-bdd9-e0503444483c" BLOCK_SIZE="1024" TYPE="ext4" PARTUUID="d33a63d4-7977-e346-bbc1-344f30a23647"
+#/dev/vdb3: UUID="9f92744a-8d9a-4377-9803-3df24ffe2bd9" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="a7fd248c-068c-7d4d-914f-0d72535fc9a3"
+#/dev/vdb4: UUID="c748e430-6b34-44b2-afad-47701c75f7d3" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="826d8856-05d2-5f4a-9579-2c5bf88298ca"
+#/dev/vdb5: UUID="5c3edb5e-89ee-49cd-a5f3-5155b46b675c" TYPE="swap" PARTUUID="fbfaf4e6-2927-f745-9296-a637e5f97f4d"
+UUID=9f92744a-8d9a-4377-9803-3df24ffe2bd9 /        ext4 errors=remount-ro 0 1
+UUID=f910cc92-a9c9-4492-bdd9-e0503444483c /boot    ext4 defaults          0 2
+UUID=c748e430-6b34-44b2-afad-47701c75f7d3 /var/log ext4 defaults          0 2
+UUID=5c3edb5e-89ee-49cd-a5f3-5155b46b675c none     swap defaults          0 0

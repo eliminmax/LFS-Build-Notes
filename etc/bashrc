@@ -1,0 +1,91 @@
+# system bashrc
+
+# TERM fix
+if [ "$TERM" = "xterm" ]; then 
+    TERM=xterm-256color
+fi
+
+## ALIASES
+alias clear-hist='history -c > ~/.bash_history;'
+alias dir='dir --color=auto'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias grep='grep --color=auto'
+alias h='history'
+alias l='ls -F'
+alias la='ls -A'
+alias ll='ls -AlF'
+alias ls='ls --color=auto'
+alias t='tree'
+alias v='vim'
+alias vdir='vdir --color=auto'
+alias vi='vim'
+alias c='clear'
+alias cl='clear'
+alias cls='clear'
+
+# Functions
+newexec () {
+    if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+        return 1
+    else
+        if [ $# -eq 2 ]; then
+            echo "#!$2" > "$1"
+        else
+            touch "$1"
+        fi
+        chmod u+x "$1"
+    fi
+}
+
+# completion
+if [[ -f /usr/share/bash-completion/bash_completion ]]; then
+	. /usr/share/bash-completion/bash_completion
+fi
+
+## Shell options
+shopt -s autocd
+shopt -s checkwinsize
+shopt -s cmdhist
+shopt -s complete_fullquote
+shopt -s expand_aliases
+shopt -s extglob
+shopt -s extquote
+shopt -s force_fignore
+shopt -s globasciiranges
+shopt -s globstar
+shopt -s interactive_comments
+shopt -s progcomp
+shopt -s promptvars
+shopt -s sourcepath
+
+# Set HISTFILE if not already set in environment
+HISTFILE="${HISTFILE=${HOME}/.bash_history}"
+
+# Set PS1
+case "$TERM" in
+	xterm-kitty|*-256color|alacritty)
+        _prompt_exit_status_color() {
+            _exit_status=$?
+            if (exit $_exit_status); then
+                printf '\e[1;38;5;46m'
+            else
+                printf '\e[1;38;5;124m'
+            fi
+            return $_exit_status
+        }
+        PS1='\[\e[1m\][\[$(_prompt_exit_status_color)\]$?\[\e[39m\]] {\[\e[38;5;178m\]\u@\h\[\e[39m\]} \[\e[38;5;246m\]\w \[\e[39m\]\$ \[\e[m\]'
+	;; *)
+        _prompt_exit_status_color() {
+            _exit_status=$?
+            if (exit $_exit_status); then
+                printf '\e[1;32m'
+            else
+                printf '\e[1;31m'
+            fi
+            return $_exit_status
+        }
+		PS1='\[\e[1m\][\[$(_prompt_exit_status_color)\]$?\[\e[39m\]] {\e[0;33m\]\u@\h\[\e[1;39m\]} \[\e[37m\]\w \[\e[1;39m\]\$ \[\e[m\]'
+	;;
+esac
+# vi:ft=sh

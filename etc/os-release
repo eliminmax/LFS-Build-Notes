@@ -1,0 +1,5 @@
+NAME="Linux From Scratch"
+VERSION="r11.2-258-systemd"
+ID=lfs
+VERSION_CODENAME="array-lfs"
+PRETTY_NAME="Linux From Scratch r11.2-258-systemd"

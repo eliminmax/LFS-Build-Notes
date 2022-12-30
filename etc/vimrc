@@ -1,0 +1,15 @@
+" Ensure defaults are set before customizing settings, not after
+source $VIMRUNTIME/defaults.vim
+let skip_defaults_vim=1
+
+set nocompatible
+set backspace=2
+set mouse=a
+set spelllang=en
+set encoding=utf-8
+set background=dark
+set shiftwidth=4 tabstop=4 softtabstop=4 expandtab autoindent
+set belloff=all
+set splitright splitbelow
+
+syntax on
