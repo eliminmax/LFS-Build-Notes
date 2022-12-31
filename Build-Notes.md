@@ -1141,14 +1141,14 @@ The `systemd-oomd` service failed to start, with the following error:
 Dec 31 12:56:44 array-lfs systemd[1]: Userspace Out-Of-Memory (OOM) Killer was skipped because of an unmet condition check (ConditionPathExists=/proc/pressure/memory).
 ```
 
-A bit of research indicated that the `/proc/pressure` directory is provided by kernels built with `CONFIG_PSI=y`. My current kernel, at time of writing, is built from the config at [kernel-configs/config-6.1.1-lfs-11.2-systemd-eliminmax-0](./kernel-configs/config-6.1.1-lfs-11.2-systemd-eliminmax-0).
+A bit of research indicated that the `/proc/pressure` directory is provided by kernels built with `CONFIG_PSI=y`. My kernel at the time was built from [config-6.1.1-…-eliminmax-0](./kernel-configs/config-6.1.1-lfs-11.2-systemd-eliminmax-0).
 
-If you look at line 140 of that config, it reads.
+If you look at line 140 of that config, it reads as follows:
 ```
 # CONFIG_PSI is not set
 ```
 
-I am in the process of building a new kernel, with the following changes applied to the config.
+I fixed it by switching to a new kernel, with the following changes applied to the config:
 
 ```diff
 31c31
@@ -1161,3 +1161,9 @@ I am in the process of building a new kernel, with the following changes applied
 > CONFIG_PSI=y
 > # CONFIG_PSI_DEFAULT_DISABLED is not set
 ```
+
+## LightDM Login failure.
+
+Attempting to log into Xfce4 with LightDM resulted in the message **`Unable to Contact Settings Server`**. It turns out that I'd missed the fact that I needed to rebuild D-Bus after the Xorg Libraries were installed to get that working.
+
+I owe my thanks to users audiodef and netfab on the gentoo discussion forums, because [this thread of theirs from 2020](https://forums.gentoo.org/viewtopic-t-1125607-start-0.html) pointed me right to the source of the problem.
