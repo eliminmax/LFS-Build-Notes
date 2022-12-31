@@ -69,6 +69,7 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
   * [Locale](#locale)
   * [Updates on the evening of Friday December 30th 2022 EST](#updates-on-the-evening-of-friday-december-30th-2022-est)
   * [Broken Polkit Authorization](#broken-polkit-authorization)
+  * [Failure to start systemd-oomd](#failure-to-start-systemd-oomd)
 
 # Additional Software from BLFS
 
@@ -1131,3 +1132,32 @@ session    include      system-auth
 This caused the LightDM GTK+ Greeter settings app to fail to launch, because it uses `pkexec` to get necessary authorization to modify the LightDM settings.
 
 I assume that what happened was that I'd made the file by hand, rather than pasting its contents in straight from the BLFS book, and wasn't paying proper attention. Once I found it, it was an easy fix.
+
+## Failure to start systemd-oomd
+
+The `systemd-oomd` service failed to start, with the following error:
+
+```
+Dec 31 12:56:44 array-lfs systemd[1]: Userspace Out-Of-Memory (OOM) Killer was skipped because of an unmet condition check (ConditionPathExists=/proc/pressure/memory).
+```
+
+A bit of research indicated that the `/proc/pressure` directory is provided by kernels built with `CONFIG_PSI=y`. My current kernel, at time of writing, is built from the config at [kernel-configs/config-6.1.1-lfs-11.2-systemd-eliminmax-0](./kernel-configs/config-6.1.1-lfs-11.2-systemd-eliminmax-0).
+
+If you look at line 140 of that config, it reads.
+```
+# CONFIG_PSI is not set
+```
+
+I am in the process of building a new kernel, with the following changes applied to the config.
+
+```diff
+31c31
+< CONFIG_LOCALVERSION="eliminmax-0"
+---
+> CONFIG_LOCALVERSION="eliminmax-1"
+140c140,141
+< # CONFIG_PSI is not set
+---
+> CONFIG_PSI=y
+> # CONFIG_PSI_DEFAULT_DISABLED is not set
+```
