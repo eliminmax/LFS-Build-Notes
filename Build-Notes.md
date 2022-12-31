@@ -10,7 +10,65 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
 
 # Table of Contents
 
-
+- [Introduction](#introduction)
+- [Table of Contents](#table-of-contents)
+- [Additional Software from BLFS](#additional-software-from-blfs)
+  * [Notes on specific software](#notes-on-specific-software)
+    + [Wget-1.21.3](#wget-1213)
+    + [cURL-7.84.0](#curl-7840)
+    + [Git-2.37.2](#git-2372)
+    + [Linux-PAM-1.5.2](#linux-pam-152)
+    + [Rustc-1.60.0](#rustc-1600)
+    + [Polkit-121](#polkit-121)
+    + [UPower-1.90.0](#upower-1900)
+    + [Mesa](#mesa)
+    + [libtiff-4.4.0](#libtiff-440)
+    + [librsvg-2.54.4](#librsvg-2544)
+    + [xdg-utils-1.1.3](#xdg-utils-113)
+    + [Node.js-18.12.1](#nodejs-18121)
+    + [Firefox-102.6.0esr](#firefox-10260esr)
+    + [xorg-server 21.1.6](#xorg-server-2116)
+    + [libtiff-4.5.0](#libtiff-450)
+- [External software](#external-software)
+  * [Notes on specific software](#notes-on-specific-software-1)
+    + [renameutils 0.12.0](#renameutils-0120)
+    + [libevent 2.1.12](#libevent-2112)
+    + [tmux 3.3a](#tmux-33a)
+    + [byobu 5.133](#byobu-5133)
+    + [Nerd Fonts v2.2.2](#nerd-fonts-v222)
+    + [lshw B.02.19.2](#lshw-b02192)
+    + [bat 0.22.1](#bat-0221)
+    + [hexyl 0.12.0](#hexyl-0120)
+    + [fd 8.6.0](#fd-860)
+    + [Hed [Commit 44d3eb7]](#hed-commit-44d3eb7)
+    + [Xorg Drivers and Guest utilities](#xorg-drivers-and-guest-utilities)
+      - [spice-protocol](#spice-protocol)
+      - [usbredir](#usbredir)
+      - [SPICE (Server) + Dependencies](#spice-server--dependencies)
+      - [xf86-video-qxl + xspice](#xf86-video-qxl--xspice)
+      - [spice-vdagent](#spice-vdagent)
+      - [QEMU Guest Agent](#qemu-guest-agent)
+      - [x-resize](#x-resize)
+    + [Neovim-8.1](#neovim-81)
+    + [the silver searcher (ag)](#the-silver-searcher-ag)
+    + [Git 2.39.0 Bash Completion](#git-2390-bash-completion)
+    + [Whisker Menu](#whisker-menu)
+    + [Papirus icon theme 20221201](#papirus-icon-theme-20221201)
+    + [kitty-0.26.5](#kitty-0265)
+    + [BPython](#bpython)
+    + [pfetch-0.6.0](#pfetch-060)
+    + [LightDM GTK+ Greeter Settings](#lightdm-gtk-greeter-settings)
+    + [Materia Compact GTK Theme](#materia-compact-gtk-theme)
+- [Software updates](#software-updates)
+  * [B/LFS](#blfs)
+- [Miscellaneous Issues](#miscellaneous-issues)
+  * [End of chapter 8 crisis](#end-of-chapter-8-crisis)
+  * [Kernel config woes](#kernel-config-woes)
+  * [SSH X forwarding](#ssh-x-forwarding)
+  * [Kernel config woes (again)](#kernel-config-woes-again)
+  * [Locale](#locale)
+  * [Updates on the evening of Friday December 30th 2022 EST](#updates-on-the-evening-of-friday-december-30th-2022-est)
+  * [Broken Polkit Authorization](#broken-polkit-authorization)
 
 # Additional Software from BLFS
 
@@ -216,7 +274,7 @@ sed -e '/=.*exec/a command -v python3.11 >/dev/null && exec python3.11 "$0" "$@"
 
 ### Firefox-102.6.0esr
 
-The version of firefox in BLFS 11.2-systemd (102.2.0esr) has vulnerabilities that have been fixed in 102.6.0esr. The build process differs in a few ways with Python3.11.
+The version of firefox in BLFS 11.2-systemd (102.2.0esr) has vulnerabilities that have been fixed in 102.6.0esr. The build process has an extra step when building with Python3.11.
 
 Before running the `./mach configure && ./mach build` command sequence, follow the following excerpt from BLFS Systemd Version r11.2-709:
 >  First remove an obsolete flag in python code, that has been removed in python-3.11:
@@ -285,7 +343,9 @@ Patches, once used, should be compressed with xz. Copies of downloaded stand-alo
 
 Gzip'ed and Bzip2'ed tarballs should be decompressed and recompressed with xz.
 
-## renameutils 0.12.0
+## Notes on specific software
+
+### renameutils 0.12.0
 
 Simple tools to bulk rename and bulk copy files:
 
@@ -312,7 +372,7 @@ patch -Np1 ../renameutils-typo_fix.patch
 sudo make install
 ```
 
-## libevent 2.1.12
+### libevent 2.1.12
 
 Libevent is a dependency for `tmux`, itself a dependency for `byobu`.
 The source archive is available at https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
@@ -328,7 +388,7 @@ make
 sudo make install
 ```
 
-## tmux 3.3a
+### tmux 3.3a
 
 A **t**erminal **mul**tiplexer with an uncreative name. Used as a back-end by `byobu` - a "terminal window manager" I often use when multitasking.
 
@@ -341,7 +401,7 @@ make
 sudo make install
 ```
 
-## byobu 5.133
+### byobu 5.133
 
 A "terminal window manager" that I like to use for multitasking. Uses either GNU `screen` or `tmux` as a back-end. The `byobu-config` script has runtime dependency on snack, a part of the newt package, which depends on popt and s-lang. S-lang (a.k.a. slang) has optional dependencies on PCRE, libpng, oniguruma, and zlib. Zlib is part of the base LFS system, and PCRE, popt, and libpng are in BLFS, though I did not notice popt was present until after I'd already installed it myself. Once the dependencies covered in B/LFS are built, you can run the following to build byobu and its runtime dependencies.
 
@@ -387,7 +447,7 @@ make
 sudo make install
 ```
 
-## Nerd Fonts v2.2.2
+### Nerd Fonts v2.2.2
 
 Fonts patched to have symbols useful in various nerdy contexts - such as Linux distro logos, file type icons, and fancy prompt components.
 
@@ -404,7 +464,7 @@ sudo install -v -dm755 /usr/share/fonts/X11-TTF
 sudo cp * /usr/share/fonts/X11-TTF
 ```
 
-## lshw B.02.19.2
+### lshw B.02.19.2
 
 Simple tool to list hardware info.
 ```sh
@@ -421,7 +481,7 @@ Installs the `lshw` binary to /usr/sbin, as well as other related files.
 
 The `sed` command at the end fixes the man page section.
 
-## bat 0.22.1
+### bat 0.22.1
 
 Source tarball: https://github.com/sharkdp/bat/archive/refs/tags/v0.22.1.tar.gz
 
@@ -442,7 +502,7 @@ Explanation:
 * `--bins`: build all binaries
 * `--locked`: use the same versions of dependencies as the upstream build
 
-## hexyl 0.12.0
+### hexyl 0.12.0
 
 A hex-dump utility with colors and fancy output
 
@@ -454,7 +514,7 @@ cargo build --release --bins --locked
 sudo strip target/release/hexyl -o /usr/bin/hexyl
 ```
 
-## fd 8.6.0
+### fd 8.6.0
 
 An alternative to `find` that's easier to use and has saner defaults
 
@@ -467,7 +527,7 @@ sudo strip target/release/fd -o /usr/bin/fd
 sudo cp doc/fd.1 /usr/share/man/man1
 ```
 
-## Hed [Commit 44d3eb7]
+### Hed [Commit 44d3eb7]
 
 A simple vi-like hex editor with minimal dependencies
 
@@ -487,13 +547,13 @@ cd ..
 tar --exclude-vcs --exclude-vcs-ignores -cJvf hed-44d3eb7.tar.xz hed-44d3eb7
 ```
 
-## Xorg Drivers and Guest utilities
+### Xorg Drivers and Guest utilities
 
 This section contains Xorg drivers not from B/LFS, as well as assorted tools to allow for better performance of the LFS system, and better interaction with the host system.
 
 Finding out what Xorg drivers to build, and how to build them, was a pain. I was able to find some work-in-progress BLFS pages [here](https://wiki.linuxfromscratch.org/blfs/wiki/qemu), but they were out of date, and the build process for spice-protocols had been changed.
 
-### spice-protocol
+#### spice-protocol
 
 ```sh
 wget https://gitlab.freedesktop.org/spice/spice-protocol/-/archive/v0.14.4/spice-protocol-v0.14.4.tar.bz2
@@ -504,7 +564,7 @@ meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=r
 sudo ninja install
 ```
 
-### usbredir
+#### usbredir
 
 * Depends on libusb and GLib. GLib requires libxslt, which in turn requires libxml2. All of those are covered in BLFS.
 
@@ -518,7 +578,7 @@ ninja
 sudo ninja install
 ```
 
-### SPICE (Server) + Dependencies
+#### SPICE (Server) + Dependencies
 
 To quote the README:
 
@@ -559,7 +619,7 @@ sudo make install
 
 Note that it fails to detect GStreamer on my system unless I manually specify the path as shown above.
 
-### xf86-video-qxl + xspice
+#### xf86-video-qxl + xspice
 
 * Depends on spice-protocol and xorg-server, with an optional dependency on SPICE (the spice server) for the xspice functionality, which I use.
 
@@ -584,7 +644,7 @@ tar cvzf xf86-video-qxl.tar.gz --exclude-vcs --exclude-vcs-ignores xf86-video-qx
 sudo ln -sf Xspice /usr/bin/X
 ```
 
-### spice-vdagent
+#### spice-vdagent
 
 * Depends on spice-protocol, alsa-lib, and libinput, and libinput in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa-lib and mtdev have their own BLFS pages.
 
@@ -597,7 +657,7 @@ make
 sudo make install
 ```
 
-### QEMU Guest Agent
+#### QEMU Guest Agent
 
 This one was not in the WIP BLFS page linked earlier. I came up with it myself by referencing the QEMU docs and the metadata and contents of the **qemu-guest-agent** package in [Martin Wimpress's quickemu PPA on launchpad](https://launchpad.net/~flexiondotorg/+archive/ubuntu/quickemu/+packages).
 
@@ -641,7 +701,7 @@ EOF
 
 After rebooting the system, the QEMU guest agent ran just fine
 
-### x-resize
+#### x-resize
 
 A simple shell script which, when set up with a udev rule and proper drivers, can automatically resize the screen to fit the size of the window on the host system.
 Based on [this Github Gist](https://gist.github.com/3lpsy/4cc344ae031bf77595991c536cbd3275), with paths modified to be better integrated into the LFS environment, and the ability to respond to events involving cards other than `/dev/dri/card0` - specifically, it matches `card?`, where `?` is any single character.
@@ -657,7 +717,7 @@ EOF
 sudo udevadm control --reload-rules
 ```
 
-## Neovim-8.1
+### Neovim-8.1
 
 By default, Neovim's makefile downloads 3rd-party dependencies and statically links them. I originally was planning on dynamically linking all of them, but that proved to be a bit too painful. I'm never going to use them for anything other than neovim, so there's not much reason to try to force it. The only ones I'm going to configure it to dynamically link against are libuv, which is included in BLFS, and gettext, which is part of LFS. The build instructions for Neovim explicitly recommend using `ninja` to build it, but I found it hard to get `ninja install` to install it to the `/usr` prefix instead of the `/usr/local` prefix, so I didn't do that.
 
@@ -681,7 +741,7 @@ sudo make install
 
 I was originally planning on replacing vim 9 with neovim, but I decided not to - they each have some things that they do better than the other.
 
-## the silver searcher (ag)
+### the silver searcher (ag)
 
 A tool to rapidly search through a directory tree for regex matches. Much faster than `grep --recursive`. Installed from git repository, commit `a61f178`.
 
@@ -700,7 +760,7 @@ sudo make install-strip install-man
 sudo install -m644 -C -o root -g root ag.bashcomp.sh /usr/share/bash-Completion/completions/ag
 ```
 
-## Git 2.39.0 Bash Completion
+### Git 2.39.0 Bash Completion
 
 The source tarball for git contains bash, zsh, and tcsh completion scripts, which were not installed alongside git.
 
@@ -713,7 +773,7 @@ sudo install -m644 -C -o root -g root git-completion.bash /usr/share/bash-comple
 rm git-completion.bash
 ```
 
-## Whisker Menu
+### Whisker Menu
 
 A plugin for Xfce4 that adds a more advanced app menu
 
@@ -729,7 +789,7 @@ make
 sudo make install
 ```
 
-## Papirus icon theme 20221201
+### Papirus icon theme 20221201
 
 An icon theme I'm rather fond of
 
@@ -740,7 +800,7 @@ cd papirus-icon-theme-20221201
 sudo make install
 ```
 
-## kitty-0.26.5
+### kitty-0.26.5
 
 An extensible, fast, high-performance GPU-accelerated terminal emulator, with support for python plugins known as "kittens"
 
@@ -807,7 +867,7 @@ sudo tar xf _installation.tar -C /usr --owner=root --group=root
 
 There are probably more "correct" ways to do that, but it works.
 
-## BPython
+### BPython
 
 A REPL (Read Evaluate Print Loop) for python, with syntax highlighting, written in python.
 
@@ -821,7 +881,7 @@ pip3 wheel -w dist --no-build-isolation --no-deps $PWD
 pip3 install --no-index --find-links dist --no-cache-dir bpython
 ```
 
-## pfetch-0.6.0
+### pfetch-0.6.0
 
 A system info display tool, written fo POSIX-compliant shells.
 
@@ -835,7 +895,7 @@ tar xf pfetch-0.6.0.tar.gz pfetch-0.6.0/pfetch --strip-components=1
 sudo cp pfetch /usr/bin
 ```
 
-## LightDM GTK+ Greeter Settings
+### LightDM GTK+ Greeter Settings
 
 A graphical settings app, which integrates with the XFCE4 settings manager, and manages the LightDM GTK+ greeter.
 
@@ -880,7 +940,7 @@ sudo python3 setup.py install --optimize=1 --xfce-integration
 I originally installed it with `sudo pip3 install --no-index --find-links dist --no-cache-dir lightdm-gtk-greeter-settings`, but that resulted in a broken installation.
 
 
-## Materia Compact GTK Theme
+### Materia Compact GTK Theme
 
 A clean, no-nonsense GTK 2, 3, and 4 theme that follows the principles of material design. Comes in standard and compact versions, and 3 color variations. I like to use the compact dark version almost exclusively, but I'd like to keep another option open, so I'm building it with the default color scheme as well. Building it requires meson and sassc, both of which are in BLFS.
 
@@ -1041,3 +1101,33 @@ I built the newer versions with the instructions for the previous versions, with
 * Passed `-DCMAKE_INSTALL_LIBDIR=/usr/lib` to the libtiff `cmake` command, so that it would install to `/usr/lib`, rather than `/usr/lib64`.
 * Skipped required libtiff patch, as it fixes vulnerabilities in version 4.4.0 that were patched in 4.5.0 anyway
 * Skipped optional GLib patch, as it's optional, and not yet available for 2.74.4
+
+## Broken Polkit Authorization
+
+The **/etc/pam.d/polkit-1** file was misconfigured in a way that prevented proper authorization with `pkexec`.
+
+It should have looked like the following:
+
+```pamconf
+#%PAM-1.0
+
+auth       include      system-auth
+account    include      system-account
+password   include      system-password
+session    include      system-session
+```
+
+Instead, it had the following:
+
+```pamconf
+#%PAM-1.0
+
+auth       include      system-auth
+account    include      system-auth
+password   include      system-auth
+session    include      system-auth
+```
+
+This caused the LightDM GTK+ Greeter settings app to fail to launch, because it uses `pkexec` to get necessary authorization to modify the LightDM settings.
+
+I assume that what happened was that I'd made the file by hand, rather than pasting its contents in straight from the BLFS book, and wasn't paying proper attention. Once I found it, it was an easy fix.
