@@ -10,58 +10,7 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
 
 # Table of Contents
 
-- [Introduction](#introduction)
-- [Table of Contents](#table-of-contents)
-- [Additional Software from BLFS](#additional-software-from-blfs)
-  * [Notes on specific software](#notes-on-specific-software)
-    + [Wget-1.21.3](#wget-1213)
-    + [cURL-7.84.0](#curl-7840)
-    + [Git-2.37.2](#git-2372)
-    + [Linux-PAM-1.5.2](#linux-pam-152)
-    + [Rustc-1.60.0](#rustc-1600)
-    + [Polkit-121](#polkit-121)
-    + [UPower-1.90.0](#upower-1900)
-    + [Mesa](#mesa)
-    + [libtiff-4.4.0](#libtiff-440)
-    + [librsvg-2.54.4](#librsvg-2544)
-    + [xdg-utils-1.1.3](#xdg-utils-113)
-    + [Node.js-18.12.1](#nodejs-18121)
-    + [Firefox-102.6.0esr](#firefox-10260esr)
-- [External software](#external-software)
-  * [renameutils 0.12.0](#renameutils-0120)
-  * [libevent 2.1.12](#libevent-2112)
-  * [tmux 3.3a](#tmux-33a)
-  * [byobu 5.133](#byobu-5133)
-  * [Nerd Fonts v2.2.2](#nerd-fonts-v222)
-  * [lshw B.02.19.2](#lshw-b02192)
-  * [bat 0.22.1](#bat-0221)
-  * [hexyl 0.12.0](#hexyl-0120)
-  * [fd 8.6.0](#fd-860)
-  * [Hed [Commit 44d3eb7]](#hed-commit-44d3eb7)
-  * [Xorg Drivers and Guest utilities](#xorg-drivers-and-guest-utilities)
-    + [spice-protocol](#spice-protocol)
-    + [usbredir](#usbredir)
-    + [SPICE (Server) + Dependencies](#spice-server--dependencies)
-    + [xf86-video-qxl + xspice](#xf86-video-qxl--xspice)
-    + [spice-vdagent](#spice-vdagent)
-    + [QEMU Guest Agent](#qemu-guest-agent)
-    + [x-resize](#x-resize)
-  * [Neovim-8.1](#neovim-81)
-  * [the silver searcher (ag)](#the-silver-searcher-ag)
-  * [Git 2.39.0 Bash Completion](#git-2390-bash-completion)
-  * [Whisker Menu](#whisker-menu)
-  * [Papirus icon theme 20221201](#papirus-icon-theme-20221201)
-  * [kitty-0.26.5](#kitty-0265)
-  * [BPython](#bpython)
-  * [pfetch-0.6.0](#pfetch-060)
-- [Software updates](#software-updates)
-  * [B/LFS](#blfs)
-- [Miscellaneous Issues](#miscellaneous-issues)
-  * [End of chapter 8 crisis](#end-of-chapter-8-crisis)
-  * [Kernel config woes](#kernel-config-woes)
-  * [SSH X forwarding](#ssh-x-forwarding)
-  * [Kernel config woes (again)](#kernel-config-woes-again)
-  * [Locale](#locale)
+
 
 # Additional Software from BLFS
 
@@ -227,7 +176,6 @@ Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/rus
 
 After that, it worked fine.
 
-
 ### xdg-utils-1.1.3
 
 Has a known vulnerability ([CVE-2020-27748](https://access.redhat.com/security/cve/cve-2020-27748)), which is described as follows:
@@ -289,6 +237,10 @@ Before running the `./mach configure && ./mach build` command sequence, follow t
 ### xorg-server 21.1.6
 
 Rebuilt at a later point with xcb-util-keysyms-0.4.0, xcb-util-image-0.4.0, xcb-util-renderutil-0.3.9, and xcb-util-wm-0.4.1 installled to enable the installation of Xephyr.
+
+### libtiff-4.5.0
+
+When updating, I was able to install using the instructions that I'd previously been stuck with, by passing the flag `-DCMAKE_INSTALL_LIBDIR=/usr/lib` to cmake. I'm learning.
 
 # External software
 
@@ -922,7 +874,38 @@ popd
 tar xf lightdm-gtk-greeter-settings-1.2.2.tar.gz
 cd lightdm-gtk-greeter-settings-1.2.2
 pip3 wheel -w dist --no-build-isolation --no-deps $PWD
-sudo pip3 install --no-index --find-links dist --no-cache-dir lightdm-gtk-greeter-settings
+sudo python3 setup.py install --optimize=1 --xfce-integration
+```
+
+I originally installed it with `sudo pip3 install --no-index --find-links dist --no-cache-dir lightdm-gtk-greeter-settings`, but that resulted in a broken installation.
+
+
+## Materia Compact GTK Theme
+
+A clean, no-nonsense GTK 2, 3, and 4 theme that follows the principles of material design. Comes in standard and compact versions, and 3 color variations. I like to use the compact dark version almost exclusively, but I'd like to keep another option open, so I'm building it with the default color scheme as well. Building it requires meson and sassc, both of which are in BLFS.
+
+At runtime, it need gnome-themes-extra, which is included in BLFS, and the murrine GTK2 theme engine, which is not.
+
+To install murrine and the Materia Compact and Compact Dark themes, run the following
+
+```sh
+wget https://download.gnome.org/sources/murrine/0.98/murrine-0.98.2.tar.xz
+wget https://github.com/nana-4/materia-theme/archive/refs/tags/v20210322.tar.gz -O materia-theme-20210322.tar.gz
+
+tar xf murrine-0.98.2.tar.xz
+pushd murrine-0.98.2
+./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/murrine-0.98.2
+make
+sudo make install
+popd
+
+tar xf materia-theme-20210322.tar.gz
+cd materia-theme-20210322
+mkdir build
+cd build
+meson --prefix=/usr -Dsizes=compact -Dcolors=default,dark -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false ..
+ninja
+sudo ninja install
 ```
 
 # Software updates
