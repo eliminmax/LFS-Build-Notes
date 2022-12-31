@@ -70,6 +70,8 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
   * [Updates on the evening of Friday December 30th 2022 EST](#updates-on-the-evening-of-friday-december-30th-2022-est)
   * [Broken Polkit Authorization](#broken-polkit-authorization)
   * [Failure to start systemd-oomd](#failure-to-start-systemd-oomd)
+  * [LightDM Login failure.](#lightdm-login-failure)
+  * [XSpice](#xspice)
 
 # Additional Software from BLFS
 
@@ -622,7 +624,7 @@ Note that it fails to detect GStreamer on my system unless I manually specify th
 
 #### xf86-video-qxl + xspice
 
-* Depends on spice-protocol and xorg-server, with an optional dependency on SPICE (the spice server) for the xspice functionality, which I use.
+* Depends on spice-protocol and xorg-server, with an optional dependency on SPICE (the spice server) for the xspice functionality, which I ~~use.~~ mistakenly thought I needed (see [Miscellaneous Issues:XSpice](#xspice)).
 
 Has not had a release in years, and segfaults on modern versions of xorg. The Git repository is active, and patches to fix the issue are available.
 
@@ -1167,3 +1169,10 @@ I fixed it by switching to a new kernel, with the following changes applied to t
 Attempting to log into Xfce4 with LightDM resulted in the message **`Unable to Contact Settings Server`**. It turns out that I'd missed the fact that I needed to rebuild D-Bus after the Xorg Libraries were installed to get that working.
 
 I owe my thanks to users audiodef and netfab on the gentoo discussion forums, because [this thread of theirs from 2020](https://forums.gentoo.org/viewtopic-t-1125607-start-0.html) pointed me right to the source of the problem.
+
+
+## XSpice
+
+Turns out I'd misunderstood the point of XSpice, and the structure of the SPICE protocol.
+
+The SPICE server is supposed to run on the hypervisor, not on the guest system. There is no reason not to use the **`xf86-video-qxl`** driver instead.
