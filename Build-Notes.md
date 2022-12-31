@@ -95,6 +95,7 @@ The programs I installed from BLFS for their own sake (i.e. not as a dependency)
 * lynx-2.8.9rel.1
 * xdg-utils-1.1.3
 * LXAppearance-0.6.3
+* lightdm-1.32.0
 
 ## Notes on specific software
 
@@ -284,6 +285,10 @@ Before running the `./mach configure && ./mach build` command sequence, follow t
 >     -e '/?s)%/{s/?s)/?s:/;s/?"/?)"/}' \
 >     -i xpcom/idl-parser/xpidl/xpidl.py
 > ```
+
+### xorg-server 21.1.6
+
+Rebuilt at a later point with xcb-util-keysyms-0.4.0, xcb-util-image-0.4.0, xcb-util-renderutil-0.3.9, and xcb-util-wm-0.4.1 installled to enable the installation of Xephyr.
 
 # External software
 
@@ -878,6 +883,48 @@ tar xf pfetch-0.6.0.tar.gz pfetch-0.6.0/pfetch --strip-components=1
 sudo cp pfetch /usr/bin
 ```
 
+## LightDM GTK+ Greeter Settings
+
+A graphical settings app, which integrates with the XFCE4 settings manager, and manages the LightDM GTK+ greeter.
+
+Dependencies:
+* Python3 GOBject-Introspection bindings (BLFS Python Modules PyGObject-3.42.2)
+* lightdm-gtk-greeter (BLFS lightdm-1.32.0)
+* gdk-pixbuf (BLFS gdk-pixbuf-2.42.9)
+* GTK3+ (BLFS GTK+-3.24.34)
+* Pango (BLFS Pango-1.50.0)
+* Polkit (BLFS Polkit-121, updated on my system to Polkit-122)
+* python-distutils-extra (not part of B/LFS)
+  * intltool (not part of B/LFS)
+
+I did not list dependencies that are part of the base LFS system.
+
+Of those, I had to build the Python3 GOBject-Introspection bindings and python-distutils-extra along with intltool. I build the former using the BLFS instructions, and the latter two, along with the package itself, as follows:
+
+```sh
+wget https://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz
+wget https://deb.debian.org/debian/pool/main/p/python-distutils-extra/python-distutils-extra_2.47.tar.xz
+wget https://github.com/Xubuntu/lightdm-gtk-greeter-settings/releases/download/lightdm-gtk-greeter-settings-1.2.2/lightdm-gtk-greeter-settings-1.2.2.tar.gz
+
+tar xf intltool-0.51.0.tar.gz
+pushd intltool-0.51.0
+./configure --prefix=/usr
+make
+sudo make install
+popd
+
+tar xf python-distutils-extra_2.47.tar.xz
+pushd python-distutils-extra_2.47
+pip3 wheel -w dist --no-build-isolation --no-deps $PWD
+sudo pip3 install --no-index --find-links dist --no-cache-dir python-distutils-extra
+popd
+
+tar xf lightdm-gtk-greeter-settings-1.2.2.tar.gz
+cd lightdm-gtk-greeter-settings-1.2.2
+pip3 wheel -w dist --no-build-isolation --no-deps $PWD
+sudo pip3 install --no-index --find-links dist --no-cache-dir lightdm-gtk-greeter-settings
+```
+
 # Software updates
 
 ## B/LFS
@@ -916,6 +963,10 @@ Mostly updated because of security vulnerabilities mentioned on the page listing
   * polkit-121 has a hard-coded list of supported Javascript engines, and the supported Mozilla JS engine, the one included in BLFS, reached end-of-life in September 2022, and has a known use-after-free vulnerability which can cause a "potentially exploitable crash." ([CVE-2022-45406](https://nvd.nist.gov/vuln/detail/CVE-2022-45406))
 * systemd-252 + [coredump patch](https://www.linuxfromscratch.org/patches/blfs/svn/systemd-252-security_fix-1.patch)
   * A vulnerability in systemd versions 246 and up was found that can be used to trigger information leaks and privilege escalation. The development version of B/LFS at time of writing (Version r11.2-692) provides a patch to fix it. A similar patch exists for systemd-251, but if I need to rebuild anyway, I figure I might as well upgrade.
+* libtiff-4.5.0 *(Adapted from instructions written for version 4.4.0 in BLFS Systemd version r11.2-709)*
+* curl-7.87.0 *(Adapted from instructions written for version 7.86.0 in BLFS Systemd version r11.2-709)*
+* GLib-2.74.3 *(Adapted from instructions written for version 2.74.3 in BLFS Systemd version r11.2-709)*
+* xorg-server-21.1.6 *(already built this version, but rebuilt with Xephyr after installing its dependencies)*
 
 # Miscellaneous Issues
 
@@ -996,3 +1047,14 @@ export LANG LANGUAGE LC_CTYPE LC_NUMERIC LC_TIME LC_COLLATE LC_MONETARY \
        LC_MESSAGES LC_PAPER LC_NAME LC_ADDRESS LC_TELEPHONE LC_MEASUREMENT \
        LC_IDENTIFICATION
 ```
+
+## Updates on the evening of Friday December 30th 2022 EST
+
+The web page of [LFS and BLFS Security Advisories from September 2020 onwards](https://www.linuxfromscratch.org/blfs/advisories/consolidated.html) was updated to include 3 new listed items, but the BLFS development snapshot available at the time (r11.2-709) still has vulnerable versions.
+
+I built the newer versions with the instructions for the previous versions, with the following differences:
+
+* Replaced the version numbers in download urls, file paths, `./configure --docdir=` arguments, etc.
+* Passed `-DCMAKE_INSTALL_LIBDIR=/usr/lib` to the libtiff `cmake` command, so that it would install to `/usr/lib`, rather than `/usr/lib64`.
+* Skipped required libtiff patch, as it fixes vulnerabilities in version 4.4.0 that were patched in 4.5.0 anyway
+* Skipped optional GLib patch, as it's optional, and not yet available for 2.74.4
