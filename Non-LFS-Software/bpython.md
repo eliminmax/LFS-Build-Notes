@@ -9,5 +9,5 @@ wget https://files.pythonhosted.org/packages/79/71/10573e8d9e1f947e330bdd7772475
 tar xf bpython-0.23.tar.gz
 cd bpython-0.23
 pip3 wheel -w dist --no-build-isolation --no-deps $PWD
-pip3 install --no-index --find-links dist --no-cache-dir bpython
+sudo pip3 install --no-index --find-links dist --no-cache-dir bpython
 ```
