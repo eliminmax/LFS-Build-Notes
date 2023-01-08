@@ -79,7 +79,6 @@ The programs I installed from BLFS for their own sake (i.e. not as a dependency)
 * xfce4-pulseaudio-plugin-0.4.3
 * lynx-2.8.9rel.1
 * xdg-utils-1.1.3
-* LXAppearance-0.6.3
 * lightdm-1.32.0
 
 ## Notes on specific software
