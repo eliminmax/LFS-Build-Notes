@@ -47,6 +47,7 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
   * [LightDM Login failure.](#lightdm-login-failure)
   * [byobu dependency tree](#byobu-dependency-tree)
   * [Mass man deletion](#mass-man-deletion)
+  * [Lost snapshots](#lost-snapshots)
 
 <!-- vim-markdown-toc -->
 
@@ -365,6 +366,7 @@ List of installed external software:
 * [xf86-video-qxl](./Non-LFS-Software/xf86-video-qxl.md)
 * [xfce-panel-plugins](./Non-LFS-Software/xfce-panel-plugins.md)
 * [x-resize](./Non-LFS-Software/x-resize.md)
+* [zerofree](./Non-LFS-Software/zerofree)
 
 List of installed external dependencies
 
@@ -586,4 +588,10 @@ When working through byobu's dependency tree, I did not notice that several of t
 
 I deleted all of the man pages on the system, except for those provided by rust. I was trying to delete the pages in languages I don't speak, but messed up the glob, and ran `sudo rm -rf [a-n]* [o-z]*` without paying attention. That wiped out all man pages - I'd meant to exclude directories starting with "m", but I was tired.
 
-In order to fix this, I plan on going through every source tarball on the system, and if it provides man pages, I built them. I have not done so at time of writing.
+In order to fix this, went through every source tarball on the system, and if it provides man pages, I installed them.
+
+I'd tried to restore backups, but that did not work - see the next section.
+
+## Lost snapshots
+
+I had periodically been using what ammounts to `virt-sparsify --compress foo.qcow2 foo__.qcow2 && mv foo__.qcow2 foo.qcow2` to reclaim space from my virtual hard drives, not realizing that doing so made all of my VM snapshots unusable.
