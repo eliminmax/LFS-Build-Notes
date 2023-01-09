@@ -19,7 +19,7 @@ sudo install -m744 zerofree /usr/sbin
 
 Reboot to GRUB, and edit the menu entry by pressing the "E" key
 
-Locate the line that begins with `linux`, and append ` single init=/bin/bash` to it, and press f10 (or ctrl+x) to reboot.
+Locate the line that begins with `linux`, and append ` single init=/bin/bash` to it, and press f10 (or ctrl+X) to boot.
 
 For every partition you want to shrink, run `fsck` on it, then run `zerofree` on it, then run `fsck` again.
 
