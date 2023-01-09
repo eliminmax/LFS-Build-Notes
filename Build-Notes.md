@@ -9,10 +9,9 @@ My final system included a few extra pieces of software: OpenSSH and Sudo from B
 Originally, this page was a Github Gist I'd edit as I was building the base LFS system, but it got so big that Neovim kept freezing while I was editing it. I split off the part containing the entire Kernel config, copied my notes from the point at which I successfully booted the LFS system, and later removed most of the original notes, because this document was starting to get a bit overwhelming, and the old version was already saved to the other file.
 
 # Table of Contents
-
+# Additional Software from BLFS
 <!-- vim-markdown-toc GFM -->
 
-* [Additional Software from BLFS](#additional-software-from-blfs)
   * [Notes on specific software](#notes-on-specific-software)
     * [Wget-1.21.3](#wget-1213)
     * [cURL-7.84.0](#curl-7840)
@@ -29,36 +28,11 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
     * [Firefox-102.6.0esr](#firefox-10260esr)
     * [xorg-server 21.1.6](#xorg-server-2116)
     * [libtiff-4.5.0](#libtiff-450)
+    * [slang-2.3.3](#slang-233)
+    * [popt-1.18](#popt-118)
+    * [newt-0.52.21](#newt-05221)
 * [External software](#external-software)
-  * [Notes on specific software](#notes-on-specific-software-1)
-    * [renameutils 0.12.0](#renameutils-0120)
-    * [libevent 2.1.12](#libevent-2112)
-    * [tmux 3.3a](#tmux-33a)
-    * [byobu 5.133](#byobu-5133)
-    * [Nerd Fonts v2.2.2](#nerd-fonts-v222)
-    * [lshw B.02.19.2](#lshw-b02192)
-    * [bat 0.22.1](#bat-0221)
-    * [hexyl 0.12.0](#hexyl-0120)
-    * [fd 8.6.0](#fd-860)
-    * [Hed [Commit 44d3eb7]](#hed-commit-44d3eb7)
-    * [Xorg Drivers and Guest utilities](#xorg-drivers-and-guest-utilities)
-      * [spice-protocol](#spice-protocol)
-      * [usbredir](#usbredir)
-      * [SPICE (Server) + Dependencies](#spice-server--dependencies)
-      * [xf86-video-qxl + xspice](#xf86-video-qxl--xspice)
-      * [spice-vdagent](#spice-vdagent)
-      * [QEMU Guest Agent](#qemu-guest-agent)
-      * [x-resize](#x-resize)
-    * [Neovim-8.1](#neovim-81)
-    * [the silver searcher (ag)](#the-silver-searcher-ag)
-    * [Git 2.39.0 Bash Completion](#git-2390-bash-completion)
-    * [Whisker Menu](#whisker-menu)
-    * [Papirus icon theme 20221201](#papirus-icon-theme-20221201)
-    * [kitty-0.26.5](#kitty-0265)
-    * [BPython](#bpython)
-    * [pfetch-0.6.0](#pfetch-060)
-    * [LightDM GTK+ Greeter Settings](#lightdm-gtk-greeter-settings)
-    * [Materia Compact GTK Theme](#materia-compact-gtk-theme)
+  * [Installed external software](#installed-external-software)
 * [Software updates](#software-updates)
   * [B/LFS](#blfs)
 * [Miscellaneous Issues](#miscellaneous-issues)
@@ -70,10 +44,12 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
   * [Updates on the evening of Friday December 30th 2022 EST](#updates-on-the-evening-of-friday-december-30th-2022-est)
   * [Broken Polkit Authorization](#broken-polkit-authorization)
   * [Failure to start systemd-oomd](#failure-to-start-systemd-oomd)
+  * [LightDM Login failure.](#lightdm-login-failure)
+  * [byobu dependency tree](#byobu-dependency-tree)
+  * [Mass man deletion](#mass-man-deletion)
+  * [Lost snapshots](#lost-snapshots)
 
 <!-- vim-markdown-toc -->
-
-# Additional Software from BLFS
 
 Unless otherwise noted, I installed all required and recommended dependencies listed in the BLFS book, and did not specifically install optional dependencies. I did not write about every single package installed.
 
@@ -104,7 +80,6 @@ The programs I installed from BLFS for their own sake (i.e. not as a dependency)
 * xfce4-pulseaudio-plugin-0.4.3
 * lynx-2.8.9rel.1
 * xdg-utils-1.1.3
-* LXAppearance-0.6.3
 * lightdm-1.32.0
 
 ## Notes on specific software
@@ -303,6 +278,20 @@ Rebuilt at a later point with xcb-util-keysyms-0.4.0, xcb-util-image-0.4.0, xcb-
 
 When updating, I was able to install using the instructions that I'd previously been stuck with, by passing the flag `-DCMAKE_INSTALL_LIBDIR=/usr/lib` to cmake. I'm learning.
 
+### slang-2.3.3
+
+Built with all 3 optional dependencies
+
+### popt-1.18
+
+Had previously built popt-1.19, so I uninstalled everything that linked against popt and rebuilt against the version from BLFS
+
+### newt-0.52.21
+
+Had previously built newt-r0-52-23, so I rebuilt everything that linked against this version.
+
+Instead of passing `--with-python=python3.10`, I passed `--with-python=python3.11`, so that it build a python module for the right version.
+
 # External software
 
 The software listed here was not from the BLFS book. For each piece of software, I have a shell snippet that should build and install it. That said, I make no promises. I also assume you have an LFS system with Git, Sudo, and Wget installed. The snippets are designed with the assumption that every command succeeds, so it should be run in a `bash -e` shell, so that it exits on error, rather than continue silently.. Note that unless otherwise noted, I did not run the code snippets myself - I made them afterwards by retracing my steps.
@@ -346,630 +335,51 @@ Patches, once used, should be compressed with xz. Copies of downloaded stand-alo
 
 Gzip'ed and Bzip2'ed tarballs should be decompressed and recompressed with xz.
 
-## Notes on specific software
-
-### renameutils 0.12.0
-
-Simple tools to bulk rename and bulk copy files:
-
-* `qmv` lets you quickly move large numbers of files using a text editor. I use it all the time.
-* `imv` lets you rename a file by editing its name using `readline`
-* `qcp` and `icp` are like `qmv` and `imv`, but let you copy files instead of moving them
-* `deurlname` renames a file, replacing URL-encoded characters (like `%20`) with their plain-text equivalent.
-
-This one looked like it'd be simple enough - the instructions were to just run `./configure`, `make`, then `make install`. Unfortunately, due to a typo in the Makefile, the `make install` failed. I figured I could look into the way it was built for established distros, so on my host system, I ran `apt source renameutils` to download the source that the Pop!_OS build is made from, and found 2 patches - `install-exec-local-fix.patch` and `typo_fix.patch`. Applying those patches in that order right after extracting the `renameutils` source archive fixed it.
-
-```sh
-wget https://download.savannah.gnu.org/releases/renameutils/renameutils-0.12.0.tar.gz
-wget https://sources.debian.org/data/main/r/renameutils/0.12.0-9/debian/patches/install-exec-local-fix.patch -O renameutils-install-exec-local-fix.patch
-wget https://sources.debian.org/data/main/r/renameutils/0.12.0-9/debian/patches/typo_fix.patch -O renameutils-typo_fix.patch
-tar xf renameutils-0.12.0.tar.gz
-cd renameutils-0.12.0
-patch -Np1 ../renameutils-install-exec-local-fix.patch
-patch -Np1 ../renameutils-typo_fix.patch
-./configure                                   \
-  --prefix=/usr                               \
-  --sysconfdir=/etc                           \
-  --docdir=/usr/share/doc/renameutils-0.12.0 &&
-  make
-sudo make install
-```
-
-### libevent 2.1.12
-
-Libevent is a dependency for `tmux`, itself a dependency for `byobu`.
-The source archive is available at https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
-
-Building is simple:
-
-```sh
-wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
-tar xf libevent-2.1.12-stable.tar.gz
-cd libevent-2.1.12-stable
-./configure --prefix=/usr --sysconfdir=/etc --disable-static
-make
-sudo make install
-```
-
-### tmux 3.3a
-
-A **t**erminal **mul**tiplexer with an uncreative name. Used as a back-end by `byobu` - a "terminal window manager" I often use when multitasking.
-
-```sh
-wget https://github.com/tmux/tmux/releases/download/3.3a/tmux-3.3a.tar.gz
-tar xf tmux-3.3a.tar.gz
-cd tmux-3.3a
-./configure --prefix=/usr --sysconfdir=/etc --docdir=/usr/share/doc/tmux-3.3a
-make
-sudo make install
-```
-
-### byobu 5.133
-
-A "terminal window manager" that I like to use for multitasking. Uses either GNU `screen` or `tmux` as a back-end. The `byobu-config` script has runtime dependency on snack, a part of the newt package, which depends on popt and s-lang. S-lang (a.k.a. slang) has optional dependencies on PCRE, libpng, oniguruma, and zlib. Zlib is part of the base LFS system, and PCRE, popt, and libpng are in BLFS, though I did not notice popt was present until after I'd already installed it myself. Once the dependencies covered in B/LFS are built, you can run the following to build byobu and its runtime dependencies.
-
-```sh
-wget https://ftp.osuosl.org/pub/rpm/popt/releases/popt-1.x/popt-1.19.tar.gz
-wget https://github.com/kkos/oniguruma/releases/download/v6.9.8/onig-6.9.8.tar.gz
-wget https://www.jedsoft.org/releases/slang/slang-2.3.3.tar.bz2
-wget https://pagure.io/newt/archive/r0-52-23/newt-r0-52-23.tar.gz
-wget https://launchpad.net/byobu/trunk/5.133/+download/byobu_5.133.orig.tar.gz
-
-tar -xf popt-1.19.tar.gz
-pushd popt-1.19
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/popt-1.19
-make
-sudo make install
-popd
-
-tar xf onig-6.9.8.tar.gz
-pushd onig-6.9.8
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/onig-6.9.8
-make
-sudo make install
-popd
-
-tar xf slang-2.3.3.tar.bz2
-pushd slang-2.3.3
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/slang-2.3.3
-make
-sudo make install
-popd
-
-tar xf newt-r0-52-23.tar.gz
-pushd newt-r0-52-23
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/newt-40-52-23
-make
-sudo make install
-popd
-
-tar xf byobu_5.133.orig.tar.gz
-cd byobu_5.133
-./configure --prefix=/usr --sysconfdir=/etc --docdir=/usr/share/doc/byobu-5.133 --localstatedir=/var
-make
-sudo make install
-```
-
-### Nerd Fonts v2.2.2
-
-Fonts patched to have symbols useful in various nerdy contexts - such as Linux distro logos, file type icons, and fancy prompt components.
-
-```sh
-wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/VictorMono.zip
-wget https://github.com/ryanoasis/nerd-fonts/releases/download/v2.2.2/UbuntuMono.zip
-mkdir nerdfonts
-cd nerdfonts
-unzip ../VictorMono.zip
-yes n | unzip ../UbuntuMono.zip
-# remove unneeded files and variants
-rm readme.md LICENSE *Windows\ Compatible.ttf *Complete.ttf
-sudo install -v -dm755 /usr/share/fonts/X11-TTF
-sudo cp * /usr/share/fonts/X11-TTF
-```
-
-### lshw B.02.19.2
-
-Simple tool to list hardware info.
-```sh
-wget https://www.ezix.org/software/files/lshw-B.02.19.2.tar.gz
-tar xf lshw-B.02.19.2.tar.gz
-cd lshw-B.02.19.2
-make
-sudo make install
-sudo mv /usr/share/man/man1/lshw.1 /usr/share/man/man8/lshw.8
-sudo sed -i '/^\.TH/s/"1"/"8"/' /usr/share/man/man8/lshw.8
-```
-
-Installs the `lshw` binary to /usr/sbin, as well as other related files.
-
-The `sed` command at the end fixes the man page section.
-
-### bat 0.22.1
-
-Source tarball: https://github.com/sharkdp/bat/archive/refs/tags/v0.22.1.tar.gz
-
-```sh
-wget https://github.com/sharkdp/bat/archive/refs/tags/v0.22.1.tar.gz -O bat-0.22.1.tar.gz
-tar xf bat-0.22.1.tar.gz
-cd bat-0.22.1
-cargo build --release --bins --locked
-sed -e 's/{{PROJECT_EXECUTABLE}}/bat/g' -e 's/{{PROJECT_EXECUTABLE_UPPERCASE}}/BAT/g' assets/manual/bat.1.in > assets/manual/bat.1
-sudo strip target/release/bat -o /usr/bin/bat
-sudo cp assets/manual/bat.1 /usr/share/man/man1
-```
-
-Explanation:
-
-* `cargo build`: download dependencies from the official Rust Crates archive to the local registry and build
-* `--release`: enable optimizations that can complicate debugging
-* `--bins`: build all binaries
-* `--locked`: use the same versions of dependencies as the upstream build
-
-### hexyl 0.12.0
-
-A hex-dump utility with colors and fancy output
-
-```sh
-wget https://github.com/sharkdp/hexyl/archive/refs/tags/v0.12.0.tar.gz -O hexyl-0.12.0.tar.gz
-tar xf hexyl-0.12.0.tar.gz
-cd hexyl-0.12.0
-cargo build --release --bins --locked
-sudo strip target/release/hexyl -o /usr/bin/hexyl
-```
-
-### fd 8.6.0
-
-An alternative to `find` that's easier to use and has saner defaults
-
-```sh
-wget https://github.com/sharkdp/fd/archive/refs/tags/v8.6.0.tar.gz -O fd-8.6.0.tar.gz
-tar xf fd-8.6.0.tar.gz
-cd fd-8.6.0
-cargo build --release --bins --locked
-sudo strip target/release/fd -o /usr/bin/fd
-sudo cp doc/fd.1 /usr/share/man/man1
-```
-
-### Hed [Commit 44d3eb7]
-
-A simple vi-like hex editor with minimal dependencies
-
-This one's designed to install from the `master` branch.
-
-```sh
-git clone https://github.com/fr0zn/hed hed-44d3eb7
-cd hed-44d3eb7
-# ensure you're on the same commit I was working from
-git checkout 44d3eb7
-# fix hard-coded paths in the Makefile
-sed 's@local/@@g' -i Makefile
-make
-sudo make install
-# create source tarball for safekeeping
-cd ..
-tar --exclude-vcs --exclude-vcs-ignores -cJvf hed-44d3eb7.tar.xz hed-44d3eb7
-```
-
-### Xorg Drivers and Guest utilities
-
-This section contains Xorg drivers not from B/LFS, as well as assorted tools to allow for better performance of the LFS system, and better interaction with the host system.
-
-Finding out what Xorg drivers to build, and how to build them, was a pain. I was able to find some work-in-progress BLFS pages [here](https://wiki.linuxfromscratch.org/blfs/wiki/qemu), but they were out of date, and the build process for spice-protocols had been changed.
-
-#### spice-protocol
-
-```sh
-wget https://gitlab.freedesktop.org/spice/spice-protocol/-/archive/v0.14.4/spice-protocol-v0.14.4.tar.bz2
-tar xf spice-protocol-v0.14.4.tar.bz2
-cd spice-protocol-v0.14.4
-mkdir build && cd build
-meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=release --prefix=/usr ..
-sudo ninja install
-```
-
-#### usbredir
-
-* Depends on libusb and GLib. GLib requires libxslt, which in turn requires libxml2. All of those are covered in BLFS.
-
-```sh
-wget https://www.spice-space.org/download/usbredir/usbredir-0.13.0.tar.xz
-tar xf usbredir-0.13.0.tar.xz
-cd usbredir-0.13.0
-mkdir build && cd build
-meson -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false --buildtype=release --prefix=/usr ..
-ninja
-sudo ninja install
-```
-
-#### SPICE (Server) + Dependencies
-
-To quote the README:
-
-> SPICE is a remote display system built for virtual environments which
-> allows you to view a computing 'desktop' environment not only on the
-> machine where it is running, but from anywhere on the Internet and
-> from a wide variety of machine architectures.
-
-* Depends on spice-protocol, Pixman, OpenSSL, libjpeg, and zlib for core functionality. Optional dependencies are Cyrus-SASL, libcacard, Opus, LZ4, and GStreamer. The base LFS system has OpenSSL and zlib. BLFS has pages on libjpeg-turbo (which works as libjpeg), Pixman, GStreamer, and Opus. That leaves lz4, Cyrus-SASL, libcacard, and the previously-built spice-protocol.
-
-libcacard is used to provide virtual smart cards, which I do not intend to use. I did build it with the other dependencies.
-
-SPICE, along with the remaining dependencies from outside of B/LFS, can be built as follows:
-
-```sh
-wget https://github.com/cyrusimap/cyrus-sasl/releases/download/cyrus-sasl-2.1.28/cyrus-sasl-2.1.28.tar.gz
-tar xf cyrus-sasl-2.1.28.tar.gz
-pushd cyrus-sasl-2.1.28
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/"$(basename "$PWD")"
-make
-sudo make install
-popd
-wget https://github.com/lz4/lz4/archive/refs/tags/v1.9.4.tar.gz -O lz4-1.9.4.tar.gz
-tar xf lz4-1.9.4.tar.gz
-pushd lz4-1.9.4
-make
-sudo make PREFIX=/usr install
-# delete static lib
-sudo rm /usr/lib/liblz4.a
-popd
-wget https://gitlab.freedesktop.org/spice/spice/uploads/5b40fad4ec02e7983c182a24266541f5/spice-0.15.1.tar.bz2
-tar xf spice-0.15.1.tar.bz2
-cd spice-0.15.1
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/"$(basename "$PWD")" --enable-gstreamer=/usr/lib/libgstreamer-1.0.so
-make
-sudo make install
-```
-
-Note that it fails to detect GStreamer on my system unless I manually specify the path as shown above.
-
-#### xf86-video-qxl + xspice
-
-* Depends on spice-protocol and xorg-server, with an optional dependency on SPICE (the spice server) for the xspice functionality, which I use.
-
-Has not had a release in years, and segfaults on modern versions of xorg. The Git repository is active, and patches to fix the issue are available.
-
-The following works currently, as of upstream git commit `52e975263fe88105d151297768c7ac675ed94122`.
-
-```sh
-git clone https://gitlab.freedesktop.org/xorg/driver/xf86-video-qxl.git
-pushd xf86-video-qxl
-git remote add jmbreuer https://gitlab.freedesktop.org/jmbreuer/xf86-video-qxl.git
-git fetch jmbreuer
-git merge jmbreuer/fix-xorg-server-21
-./autogen.sh
-./configure $XORG_CONFIG --enable-xspice=yes
-make
-sudo make install
-popd
-# Create a source tarball for safekeeping
-tar cvzf xf86-video-qxl.tar.gz --exclude-vcs --exclude-vcs-ignores xf86-video-qxl
-# point the /usr/bin/X symlink to Xspice
-sudo ln -sf Xspice /usr/bin/X
-```
-
-#### spice-vdagent
-
-* Depends on spice-protocol, alsa-lib, and libinput, and libinput in turn depends on libevdev and mtdev. Both libinput and libevdev can be found on the Xorg Drivers page of BLFS, while alsa-lib and mtdev have their own BLFS pages.
-
-```sh
-wget https://www.spice-space.org/download/releases/spice-vdagent-0.22.1.tar.bz2
-tar xf spice-vdagent-0.22.1.tar.bz2
-cd spice-vdagent-0.22.1
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/spice-vdagent-0.22.1 --with-init-script=systemd
-make
-sudo make install
-```
-
-#### QEMU Guest Agent
-
-This one was not in the WIP BLFS page linked earlier. I came up with it myself by referencing the QEMU docs and the metadata and contents of the **qemu-guest-agent** package in [Martin Wimpress's quickemu PPA on launchpad](https://launchpad.net/~flexiondotorg/+archive/ubuntu/quickemu/+packages).
-
-I decided to build version 7.0.0, because it matches the version of QEMU on the host system. I don't know if that was needed, but it can't hurt. Depends on liburing2, a library that provides a simplified interface to the Linux kernel's io_uring functionality. I don't know what that means, but whatever.
-Build and install liburing2 and qemu-ga:
-
-```sh
-wget https://github.com/axboe/liburing/archive/refs/tags/liburing-2.3.tar.gz
-tar xf liburing-2.3.tar.gz
-pushd liburing-liburing-2.3
-./configure --prefix=/usr --libdir=/usr/lib --mandir=/usr/share/man
-make
-sudo make install
-sudo strip /usr/lib/liburing.so.2.3
-popd
-wget https://download.qemu.org/qemu-7.0.0.tar.xz
-tar xf qemu-7.0.0.tar.xz
-pushd qemu-7.0.0
-./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --libdir=/usr/lib --docdir=/usr/share/doc/"$(basename "$PWD")" --without-default-features --enable-guest-agent --without-default-devices
-make qemu-ga
-sudo strip build/qga/qemu-ga -o /usr/sbin/qemu-ga
-popd
-sudo dd of=/usr/lib/systemd/system/qemu-guest-agent.service <<EOF
-[Unit]
-Description=QEMU Guest Agent
-BindsTo=dev-virtio\x2dports-org.qemu.guest_agent.0.device
-After=dev-virtio\x2dports-org.qemu.guest_agent.0.device
-
-[Service]
-ExecStart=-/usr/sbin/qemu-ga
-Restart=always
-RestartSec=0
-
-[Install]
-EOF
-
-sudo dd of=/usr/lib/udev/rules.d/60-qemu-guest-agent.rules <<EOF
-SUBSYSTEM=="virtio-ports", ATTR{name}=="org.qemu.guest_agent.0",  TAG+="systemd" ENV{SYSTEMD_WANTS}="qemu-guest-agent.service"
-EOF
-```
-
-After rebooting the system, the QEMU guest agent ran just fine
-
-#### x-resize
-
-A simple shell script which, when set up with a udev rule and proper drivers, can automatically resize the screen to fit the size of the window on the host system.
-Based on [this Github Gist](https://gist.github.com/3lpsy/4cc344ae031bf77595991c536cbd3275), with paths modified to be better integrated into the LFS environment, and the ability to respond to events involving cards other than `/dev/dri/card0` - specifically, it matches `card?`, where `?` is any single character.
-
-Depends on udev (part of systemd) and xspice.
-
-```sh
-wget https://gist.githubusercontent.com/eliminmax/f2eff01a304607b4249cbc4f027cbd91/raw/43296df8c17aa45c1f9772746e911be66a99feb7/x-resize-LFS -O x-resize
-sudo install -m744 x-resize /usr/sbin
-sudo dd of=/usr/lib/udev/rules.d/50-x-resize.rules <<EOF
-ACTION=="change",KERNEL=="card?", SUBSYSTEM=="drm", RUN+="/usr/sbin/x-resize"
-EOF
-sudo udevadm control --reload-rules
-```
-
-### Neovim-8.1
-
-By default, Neovim's makefile downloads 3rd-party dependencies and statically links them. I originally was planning on dynamically linking all of them, but that proved to be a bit too painful. I'm never going to use them for anything other than neovim, so there's not much reason to try to force it. The only ones I'm going to configure it to dynamically link against are libuv, which is included in BLFS, and gettext, which is part of LFS. The build instructions for Neovim explicitly recommend using `ninja` to build it, but I found it hard to get `ninja install` to install it to the `/usr` prefix instead of the `/usr/local` prefix, so I didn't do that.
-
-Assuming that you've built libuv from BLFS, you can build Neovim as follows:
-
-```sh
-wget https://github.com/neovim/neovim/archive/refs/tags/v0.8.1.tar.gz -O neovim-0.8.1.tar.gz
-tar xf neovim-0.8.1.tar.gz
-cd neovim-0.8.1
-mkdir .deps
-pushd .deps
-cmake ../cmake.deps -DUSE_BUNDLED_LIBUV=OFF -DUSE_BUNDLED_GETTEXT=OFF
-make -j$(nproc)
-popd
-mkdir build
-cd build
-cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib
-make -j$(nproc) ..
-sudo make install
-```
-
-I was originally planning on replacing vim 9 with neovim, but I decided not to - they each have some things that they do better than the other.
-
-### the silver searcher (ag)
-
-A tool to rapidly search through a directory tree for regex matches. Much faster than `grep --recursive`. Installed from git repository, commit `a61f178`.
-
-Has 4 dependencies: Automake, pkg-config, liblzma, and PCRE. The first three are part of the base LFS system, and PCRE is part of BLFS, and was already installed for other software that depends on it.
-
-
-```sh
-git clone https://github.com/ggreer/the_silver_searcher.git the_silver_searcher-a61f178
-cd the_silver_searcher-a61f178
-git checkout a61f178
-./autogen.sh
-./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/the_silver_searcher-a61f178
-make
-# install stripped version, man pages, and bash completion, but not zsh completion
-sudo make install-strip install-man
-sudo install -m644 -C -o root -g root ag.bashcomp.sh /usr/share/bash-Completion/completions/ag
-```
-
-### Git 2.39.0 Bash Completion
-
-The source tarball for git contains bash, zsh, and tcsh completion scripts, which were not installed alongside git.
-
-Because I don't plan on installing zsh or tcsh, I am only installing the bash completion script
-
-```sh
-# extract only the needed file
-tar xf git-2.39.0.tar.xz git-2.39.0/contrib/completion/git-completion.bash --strip-components=3
-sudo install -m644 -C -o root -g root git-completion.bash /usr/share/bash-completion/completions/git
-rm git-completion.bash
-```
-
-### Whisker Menu
-
-A plugin for Xfce4 that adds a more advanced app menu
-
-```sh
-wget https://archive.xfce.org/src/panel-plugins/xfce4-whiskermenu-plugin/2.7/xfce4-whiskermenu-plugin-2.7.1.tar.bz2
-
-tar xf xfce4-whiskermenu-plugin.2.7.1.tar.bz2
-cd xfce4-whiskermenu-plugin.2.7.1
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib -DCMAKE_INSTALL_LOCALEDIR=/usr/share/locale -DCMAKE_INSTALL_MANDIR=/usr/share/man ..
-make
-sudo make install
-```
-
-### Papirus icon theme 20221201
-
-An icon theme I'm rather fond of
-
-```sh
-wget https://github.com/PapirusDevelopmentTeam/papirus-icon-theme/archive/refs/tags/20221201.tar.gz -O - | gzip -d | xz > papirus-icon-theme-20221201.tar.xz
-tar xf papirus-icon-theme-20221201.tar.xz
-cd papirus-icon-theme-20221201
-sudo make install
-```
-
-### kitty-0.26.5
-
-An extensible, fast, high-performance GPU-accelerated terminal emulator, with support for python plugins known as "kittens"
-
-Build Dependencies:
-* gcc or clang (part of base LFS system)
-* pkg-config (part of base LFS system)
-* libdbus-1 (part of base LFS system)
-* libxcursor (part of BLFS Xorg Libraries)
-* libxrandr (part of BLFS Xorg Libraries)
-* libxi (part of BLFS Xorg Libraries)
-* libgl1-mesa (part of BLFS Mesa)
-* libxkbcommon-x11 (part of BLFS libxkbcommon)
-* libfontconfig (part of BLFS Fontconfig)
-* libx11-xcb (not sure where I got this, but it's installed)
-* libpython3 (part of base LFS system)
-* liblcms2 (Little CMS 2.13.1 in BLFS)
-* librsync
-  * depends on popt, which I'd installed from outside of BLFS, but is available in BLFS
-
-Runtime Dependencies:
-
-* python 3 (part of the base LFS system)
-* harfbuzz (included in BLFS)
-* zlib (part of the base LFS system)
-* libpng (included in BLFS)
-* liblcms2 (included in BLFS)
-* freetype (included in BLFS)
-* fontconfig (included in BLFS)
-* libcanberra (included in BLFS)
-* ImageMagick (included in BLFS)
-* pygments (part of BLFS Python Modules)
-* openssl (part of the base LFS system)
-* librsync
-
-I had already installed all of the B/LFS-provided dependencies except for ImageMagick and Little CMS 2. I built Little CMS 2 without issue.
-
-Building librsync (which is not actually part of rsync) can be done as follows:
-```sh
-wget https://github.com/librsync/librsync/releases/download/v2.3.2/librsync-2.3.2.tar.gz
-gunzip librsync-2.3.2.tar.gz
-tar xf librsync-2.3.2.tar
-xz libsync-2.3.2.tar
-cd librsync-2.3.2
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib -DCMAKE_INSTALL_LOCALEDIR=/usr/share/locale -DCMAKE_INSTALL_MANDIR=/usr/share/man .
-make
-sudo make install
-```
-
-Kitty has its own way of doing things. To build it, you can run the following, but it installs it to the linux-package directory within the source tree by default.
-```sh
-wget https://github.com/kovidgoyal/kitty/releases/download/v0.26.5/kitty-0.26.5.tar.xz
-tar xf kitty-0.26.5.tar.xz
-cd kitty-0.26.5
-make linux-package
-```
-
-To move the installation into the /usr prefix, you can do the following:
-
-```sh
-cd linux-package
-tar cf _installation.tar bin lib share
-sudo tar xf _installation.tar -C /usr --owner=root --group=root
-```
-
-There are probably more "correct" ways to do that, but it works.
-
-### BPython
-
-A REPL (Read Evaluate Print Loop) for python, with syntax highlighting, written in python.
-
-Installation:
-
-```sh
-wget https://files.pythonhosted.org/packages/79/71/10573e8d9e1f947e330bdd77724750163dbd80245840f7e852c9fec493c4/bpython-0.23.tar.gz
-tar xf bpython-0.23.tar.gz
-cd bpython-0.23
-pip3 wheel -w dist --no-build-isolation --no-deps $PWD
-pip3 install --no-index --find-links dist --no-cache-dir bpython
-```
-
-### pfetch-0.6.0
-
-A system info display tool, written fo POSIX-compliant shells.
-
-Made by the same person as Neofetch. Output is much smaller, making it good as a pseuto-MOTD.
-
-Installation:
-
-```sh
-wget https://github.com/dylanaraps/pfetch/archive/refs/tags/0.6.0.tar.gz -O pfetch-0.6.0.tar.gz
-tar xf pfetch-0.6.0.tar.gz pfetch-0.6.0/pfetch --strip-components=1
-sudo cp pfetch /usr/bin
-```
-
-### LightDM GTK+ Greeter Settings
-
-A graphical settings app, which integrates with the XFCE4 settings manager, and manages the LightDM GTK+ greeter.
-
-Dependencies:
-* Python3 GOBject-Introspection bindings (BLFS Python Modules PyGObject-3.42.2)
-* lightdm-gtk-greeter (BLFS lightdm-1.32.0)
-* gdk-pixbuf (BLFS gdk-pixbuf-2.42.9)
-* GTK3+ (BLFS GTK+-3.24.34)
-* Pango (BLFS Pango-1.50.0)
-* Polkit (BLFS Polkit-121, updated on my system to Polkit-122)
-* python-distutils-extra (not part of B/LFS)
-  * intltool (not part of B/LFS)
-
-I did not list dependencies that are part of the base LFS system.
-
-Of those, I had to build the Python3 GOBject-Introspection bindings and python-distutils-extra along with intltool. I build the former using the BLFS instructions, and the latter two, along with the package itself, as follows:
-
-```sh
-wget https://launchpad.net/intltool/trunk/0.51.0/+download/intltool-0.51.0.tar.gz
-wget https://deb.debian.org/debian/pool/main/p/python-distutils-extra/python-distutils-extra_2.47.tar.xz
-wget https://github.com/Xubuntu/lightdm-gtk-greeter-settings/releases/download/lightdm-gtk-greeter-settings-1.2.2/lightdm-gtk-greeter-settings-1.2.2.tar.gz
-
-tar xf intltool-0.51.0.tar.gz
-pushd intltool-0.51.0
-./configure --prefix=/usr
-make
-sudo make install
-popd
-
-tar xf python-distutils-extra_2.47.tar.xz
-pushd python-distutils-extra_2.47
-pip3 wheel -w dist --no-build-isolation --no-deps $PWD
-sudo pip3 install --no-index --find-links dist --no-cache-dir python-distutils-extra
-popd
-
-tar xf lightdm-gtk-greeter-settings-1.2.2.tar.gz
-cd lightdm-gtk-greeter-settings-1.2.2
-pip3 wheel -w dist --no-build-isolation --no-deps $PWD
-sudo python3 setup.py install --optimize=1 --xfce-integration
-```
-
-I originally installed it with `sudo pip3 install --no-index --find-links dist --no-cache-dir lightdm-gtk-greeter-settings`, but that resulted in a broken installation.
-
-
-### Materia Compact GTK Theme
-
-A clean, no-nonsense GTK 2, 3, and 4 theme that follows the principles of material design. Comes in standard and compact versions, and 3 color variations. I like to use the compact dark version almost exclusively, but I'd like to keep another option open, so I'm building it with the default color scheme as well. Building it requires meson and sassc, both of which are in BLFS.
-
-At runtime, it need gnome-themes-extra, which is included in BLFS, and the murrine GTK2 theme engine, which is not.
-
-To install murrine and the Materia Compact and Compact Dark themes, run the following
-
-```sh
-wget https://download.gnome.org/sources/murrine/0.98/murrine-0.98.2.tar.xz
-wget https://github.com/nana-4/materia-theme/archive/refs/tags/v20210322.tar.gz -O materia-theme-20210322.tar.gz
-
-tar xf murrine-0.98.2.tar.xz
-pushd murrine-0.98.2
-./configure --disable-static --prefix=/usr --sysconfdir=/etc --localstatedir=/var --docdir=/usr/share/doc/murrine-0.98.2
-make
-sudo make install
-popd
-
-tar xf materia-theme-20210322.tar.gz
-cd materia-theme-20210322
-mkdir build
-cd build
-meson --prefix=/usr -Dsizes=compact -Dcolors=default,dark -Dlibdir=/usr/lib -Dbackend=ninja -Dstrip=true -Ddebug=false ..
-ninja
-sudo ninja install
-```
+## Installed external software
+
+I documented the build and installation process for software I installed from outside B/LFS in the **Non-BLFS-Software directory**, and any non-B/LFS dependencies I built in the **Non-BLFS-Software/deps** directory.
+
+List of installed external software:
+
+* [ag](./Non-LFS-Software/ag.md)
+* [bat](./Non-LFS-Software/bat.md)
+* [bash-completion](./Non-LFS-Software/bash-completion.md)
+* [bpython](./Non-LFS-Software/bpython.md)
+* [byobu](./Non-LFS-Software/byobu.md)
+* [extra-bash-completion](./Non-LFS-Software/extra-bash-completion.md)
+* [fd](./Non-LFS-Software/fd.md)
+* [hed](./Non-LFS-Software/hed.md)
+* [hexyl](./Non-LFS-Software/hexyl.md)
+* [jq](./Non-LFS-Software/jq.md)
+* [kitty](./Non-LFS-Software/kitty.md)
+* [lightdm-gtk-greeter-settings](./Non-LFS-Software/lightdm-gtk-greeter-settings.md)
+* [lshw](./Non-LFS-Software/lshw.md)
+* [materia-gtk-theme](./Non-LFS-Software/materia-gtk-theme.md)
+* [neofetch](./Non-LFS-Software/neofetch.md)
+* [neovim](./Non-LFS-Software/neovim.md)
+* [nerd-fonts](./Non-LFS-Software/nerd-fonts.md)
+* [oil](./Non-LFS-Software/oil.md)
+* [papirus-icon-theme](./Non-LFS-Software/papirus-icon-theme.md)
+* [pfetch](./Non-LFS-Software/pfetch.md)
+* [renameutils](./Non-LFS-Software/renameutils.md)
+* [usbredir](./Non-LFS-Software/usbredir.md)
+* [xf86-video-qxl](./Non-LFS-Software/xf86-video-qxl.md)
+* [xfce-panel-plugins](./Non-LFS-Software/xfce-panel-plugins.md)
+* [x-resize](./Non-LFS-Software/x-resize.md)
+* [zerofree](./Non-LFS-Software/zerofree)
+
+List of installed external dependencies
+
+* [intltool](./Non-LFS-Software/deps/intltool.md)
+* [libevent](./Non-LFS-Software/deps/libevent.md)
+* [librsync](./Non-LFS-Software/deps/librsync.md)
+* [murrine](./Non-LFS-Software/deps/murrine.md)
+* [onigmura](./Non-LFS-Software/deps/onigmura.md)
+* [python-distutils-extra](./Non-LFS-Software/deps/python-distutils-extra.md)
+* [qemu-guest-agent](./Non-LFS-Software/deps/qemu-guest-agent.md)
+* [spice-protocol](./Non-LFS-Software/deps/spice-protocol.md)
+* [spice-vdagent](./Non-LFS-Software/deps/spice-vdagent.md)
+* [tmux](./Non-LFS-Software/deps/tmux.md)
 
 # Software updates
 
@@ -1169,3 +579,19 @@ I fixed it by switching to a new kernel, with the following changes applied to t
 Attempting to log into Xfce4 with LightDM resulted in the message **`Unable to Contact Settings Server`**. It turns out that I'd missed the fact that I needed to rebuild D-Bus after the Xorg Libraries were installed to get that working.
 
 I owe my thanks to users audiodef and netfab on the gentoo discussion forums, because [this thread of theirs from 2020](https://forums.gentoo.org/viewtopic-t-1125607-start-0.html) pointed me right to the source of the problem.
+
+## byobu dependency tree
+
+When working through byobu's dependency tree, I did not notice that several of the dependencies were covered within BLFS. I rebuilt those depednencies as  covered in B/LFS, and rebuilt anything I'd previously built against newer versions of the software - I'd rather stick to the versions in B/LFS unless there's a reason not to (such as a security vulnerability).
+
+## Mass man deletion
+
+I deleted all of the man pages on the system, except for those provided by rust. I was trying to delete the pages in languages I don't speak, but messed up the glob, and ran `sudo rm -rf [a-n]* [o-z]*` without paying attention. That wiped out all man pages - I'd meant to exclude directories starting with "m", but I was tired.
+
+In order to fix this, went through every source tarball on the system, and if it provides man pages, I installed them.
+
+I'd tried to restore backups, but that did not work - see the next section.
+
+## Lost snapshots
+
+I had periodically been using what ammounts to `virt-sparsify --compress foo.qcow2 foo__.qcow2 && mv foo__.qcow2 foo.qcow2` to reclaim space from my virtual hard drives, not realizing that doing so made all of my VM snapshots unusable.
