@@ -48,6 +48,7 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
   * [byobu dependency tree](#byobu-dependency-tree)
   * [Mass man deletion](#mass-man-deletion)
   * [Lost snapshots](#lost-snapshots)
+  * [Xfce 4.18 Upgrade](#xfce-418-upgrade)
 
 <!-- vim-markdown-toc -->
 
@@ -423,6 +424,23 @@ Mostly updated because of security vulnerabilities mentioned on the page listing
 * curl-7.87.0 *(Adapted from instructions written for version 7.86.0 in BLFS Systemd version r11.2-709)*
 * GLib-2.74.3 *(Adapted from instructions written for version 2.74.3 in BLFS Systemd version r11.2-709)*
 * xorg-server-21.1.6 *(already built this version, but rebuilt with Xephyr after installing its dependencies)*
+* xfce4-4.18
+  * I downloaded the source for the core components of the xfce4 desktop environment version 4.18, and built them in the same order I'd built their 4.16 equivalents.
+    * [libxfce4util](https://archive.xfce.org/xfce/4.18/src/libxfce4util-4.18.0.tar.bz2)
+    * [xfconf](https://archive.xfce.org/xfce/4.18/src/xfconf-4.18.0.tar.bz2)
+    * [libxfce4ui](https://archive.xfce.org/xfce/4.18/src/libxfce4ui-4.18.0.tar.bz2)
+    * [garcon](https://archive.xfce.org/xfce/4.18/src/garcon-4.18.0.tar.bz2)
+    * [exo](https://archive.xfce.org/xfce/4.18/src/exo-4.18.0.tar.bz2)
+    * [thunar](https://archive.xfce.org/xfce/4.18/src/thunar-4.18.0.tar.bz2)
+    * [thunar-volman](https://archive.xfce.org/xfce/4.18/src/thunar-volman-4.18.0.tar.bz2)
+    * [tumbler](https://archive.xfce.org/xfce/4.18/src/tumbler-4.18.0.tar.bz2)
+    * [xfce4-appfinder](https://archive.xfce.org/xfce/4.18/src/xfce4-appfinder-4.18.0.tar.bz2)
+    * [xfce4-panel](https://archive.xfce.org/xfce/4.18/src/xfce4-panel-4.18.0.tar.bz2)
+    * [xfce4-power-manager](https://archive.xfce.org/xfce/4.18/src/xfce4-power-manager-4.18.0.tar.bz2)
+    * [xfce4-settings](https://archive.xfce.org/xfce/4.18/src/xfce4-settings-4.18.0.tar.bz2)
+    * [xfdesktop](https://archive.xfce.org/xfce/4.18/src/xfdesktop-4.18.0.tar.bz2)
+    * [xfwm4](https://archive.xfce.org/xfce/4.18/src/xfwm4-4.18.0.tar.bz2)
+    * [xfce4-session](https://archive.xfce.org/xfce/4.18/src/xfce4-session-4.18.0.tar.bz2)
 
 # Miscellaneous Issues
 
@@ -430,8 +448,7 @@ The first two entries of this are from my original build notes, but after that, 
 
 ## End of chapter 8 crisis
 
-At the end of chapter 8, in **8.79. Stripping**, I blindly copied in the commands that it listed, and that turned out to be a major problem, because I updated zlib to version 1.
-2.13, and it was set up to skip stripping a list of hard-coded libraries, which was still on 1.2.12. The `strip` binary depends on zlib, and somehow, when trying to strip its own dependency, `/usr/lib/libz.so.1.2.13` was overwritten, and was now an empty file. I had deleted the old zlib build directory, and had to restart from step one, but the `./configure` command failed without zlib already available. What I wound up doing was leaving the chroot environment, copying `/usr/lib/libz.so.1.2.11` from the build VM to the chroot, pointing the `/usr/lib/libz.so` and `/usr/lib/libz.so.1` symlinks to that, and rebuilding zlib, reverting the symlinks, rebuilding it yet again, then confirming that the one build with zlib 1.2.11 and the one build with zlib 1.2.13 were byte-for-byte identical.
+At the end of chapter 8, in **8.79. Stripping**, I blindly copied in the commands that it listed, and that turned out to be a major problem, because I updated zlib to version 1.2.13, and it was set up to skip stripping a list of hard-coded libraries, which was still on 1.2.12. The `strip` binary depends on zlib, and somehow, when trying to strip its own dependency, `/usr/lib/libz.so.1.2.13` was overwritten, and was now an empty file. I had deleted the old zlib build directory, and had to restart from step one, but the `./configure` command failed without zlib already available. What I wound up doing was leaving the chroot environment, copying `/usr/lib/libz.so.1.2.11` from the build VM to the chroot, pointing the `/usr/lib/libz.so` and `/usr/lib/libz.so.1` symlinks to that, and rebuilding zlib, reverting the symlinks, rebuilding it yet again, then confirming that the one build with zlib 1.2.11 and the one build with zlib 1.2.13 were byte-for-byte identical.
 
 Later on, I realized that by stripping the `/usr/bin/oil.ovm` binary, I'd accidentally broken it. All it did when run was print the following:
 
@@ -510,7 +527,7 @@ The web page of [LFS and BLFS Security Advisories from September 2020 onwards](h
 
 I built the newer versions with the instructions for the previous versions, with the following differences:
 
-* Replaced the version numbers in download urls, file paths, `./configure --docdir=` arguments, etc.
+* Replaced the version numbers in download URLs, file paths, `./configure --docdir=` arguments, etc.
 * Passed `-DCMAKE_INSTALL_LIBDIR=/usr/lib` to the libtiff `cmake` command, so that it would install to `/usr/lib`, rather than `/usr/lib64`.
 * Skipped required libtiff patch, as it fixes vulnerabilities in version 4.4.0 that were patched in 4.5.0 anyway
 * Skipped optional GLib patch, as it's optional, and not yet available for 2.74.4
@@ -594,4 +611,37 @@ I'd tried to restore backups, but that did not work - see the next section.
 
 ## Lost snapshots
 
-I had periodically been using what ammounts to `virt-sparsify --compress foo.qcow2 foo__.qcow2 && mv foo__.qcow2 foo.qcow2` to reclaim space from my virtual hard drives, not realizing that doing so made all of my VM snapshots unusable.
+I had periodically been using what amounts to `virt-sparsify --compress foo.qcow2 foo__.qcow2 && mv foo__.qcow2 foo.qcow2` to reclaim space from my virtual hard drives, not realizing that doing so made all of my VM snapshots unusable.
+
+## Xfce 4.18 Upgrade
+
+I was a bit paranoid about upgrading the Xfce4 version in-place, so I rebuilt it in an environment that I created with some unholy amalgamation of mount namespaces, an overlayfs, and a chroot, after taking a snapshot of the system before I updated. As a result, I got a directory containing only files that were updated throughout. I then made a tarball of that, which I then extracted into the root directory. Naturally, that broke the running lightdm system, but after a reboot, it seemed to be working fine.
+
+Not satisfied with that, I wrote then ran the following script to do it all over again in a more proper manner:
+
+```sh
+#!/bin/bash
+
+set -ex
+
+for pkg in {libxfce4util,xfconf,libxfce4ui,garcon,exo,thunar{,-volman},tumbler,xfce4-{appfinder,panel,power-manager,settings},xfdesktop,xfwm4,xfce4-session}-4.18.0; do
+	wget "https://archive.xfce.org/xfce/4.18/src/$pkg.tar.bz2"
+	bunzip2 "$pkg.tar.bz2"
+	tar xf "$pkg.tar"
+	pushd "$pkg"
+	./configure $XORG_CONFIG
+	make
+	sudo make install
+	popd
+	rm -rf "$pkg"
+	xz "$pkg.tar"
+	mv "$pkg.tar.xz" /sources
+done
+```
+
+What that does is iterate through the various components, downloads the source tarball, then decompress, extract, configure, build, and install the package. After that, it deletes the source directory, recompresses the tarball with `xz`, and moves the recompressed version to the **/sources** directory.
+
+The `{libxfce4util,…xfwm4,xfce4-session}-4.18.0` thing is expanded to the following by `bash`:
+```
+libxfce4util-4.18.0 xfconf-4.18.0 libxfce4ui-4.18.0 garcon-4.18.0 exo-4.18.0 thunar-4.18.0 thunar-volman-4.18.0 tumbler-4.18.0 xfce4-appfinder-4.18.0 xfce4-panel-4.18.0 xfce4-power-manager-4.18.0 xfce4-settings-4.18.0 xfdesktop-4.18.0 xfwm4-4.18.0 xfce4-session-4.18.0
+```
