@@ -367,7 +367,8 @@ List of installed external software:
 * [xf86-video-qxl](./Non-LFS-Software/xf86-video-qxl.md)
 * [xfce-panel-plugins](./Non-LFS-Software/xfce-panel-plugins.md)
 * [x-resize](./Non-LFS-Software/x-resize.md)
-* [zerofree](./Non-LFS-Software/zerofree)
+* [zerofree](./Non-LFS-Software/zerofree.md)
+* [sgt-puzzles](./Non-LFS-Software/sgt-puzzles.md)
 
 List of installed external dependencies
 
