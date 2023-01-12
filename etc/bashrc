@@ -85,7 +85,7 @@ case "$TERM" in
             fi
             return $_exit_status
         }
-		PS1='\[\e[1m\][\[$(_prompt_exit_status_color)\]$?\[\e[39m\]] {\e[0;33m\]\u@\h\[\e[1;39m\]} \[\e[37m\]\w \[\e[1;39m\]\$ \[\e[m\]'
+		PS1='\[\e[1m\][\[$(_prompt_exit_status_color)\]$?\[\e[39m\]] {\[\e[0;93m\]\u@\h\[\e[1;39m\]} \[\e[37m\]\w \[\e[1;39m\]\$ \[\e[m\]'
 	;;
 esac
 # vi:ft=sh
