@@ -3,7 +3,8 @@
 I used Linux From Scratch Version 11.2-systemd as a basis for my build, and noted any deviation from its instructions, and difficulties I ran into while working on it.
 
 The original notes, including extensive documentation about the system I used to bootstrap and build the system, is in the file **Original-Build-Notes.md**.
-
+/usr/lib/python3.11/site-packages/prompt_toolkit/eventloop/utils.py:118: DeprecationWarning: There is no current event loop
+  return asyncio.get_event_loop_policy().get_event_loop()
 My final system included a few extra pieces of software: OpenSSH and Sudo from BLFS, and a few external programs: BASH completion, the Oil/Osh shell with a personal patch, and Neofetch, an eye-candy system info display tool written in bash.
 
 Originally, this page was a Github Gist I'd edit as I was building the base LFS system, but it got so big that Neovim kept freezing while I was editing it. I split off the part containing the entire Kernel config, copied my notes from the point at which I successfully booted the LFS system, and later removed most of the original notes, because this document was starting to get a bit overwhelming, and the old version was already saved to the other file.
@@ -328,7 +329,7 @@ cd libfoo-e1a6d82
 git checkout e1a6d82
 ### build and install libfoo
 cd ..
-tar --use-compress-program=xz cf libfoo-e1a6d82.tar.xz libfoo-e1a6d82 --exclude-vcs-ignores --exclude-vcs
+tar cJvf libfoo-e1a6d82.tar.xz libfoo-e1a6d82 --exclude-vcs-ignores --exclude-vcs
 rm -rf libfoo-e1a6d82
 ```
 
@@ -369,6 +370,8 @@ List of installed external software:
 * [x-resize](./Non-LFS-Software/x-resize.md)
 * [zerofree](./Non-LFS-Software/zerofree.md)
 * [sgt-puzzles](./Non-LFS-Software/sgt-puzzles.md)
+* [xclip](./Non-LFS-Software/xclip.md)
+* [xonsh](./Non-LFS-Software/xonsh.md)
 
 List of installed external dependencies
 
@@ -377,7 +380,7 @@ List of installed external dependencies
 * [librsync](./Non-LFS-Software/deps/librsync.md)
 * [murrine](./Non-LFS-Software/deps/murrine.md)
 * [onigmura](./Non-LFS-Software/deps/onigmura.md)
-* [python-distutils-extra](./Non-LFS-Software/deps/python-distutils-extra.md)
+* [various python modules](./Non-LFS-Software/deps/python-modules.md)
 * [qemu-guest-agent](./Non-LFS-Software/deps/qemu-guest-agent.md)
 * [spice-protocol](./Non-LFS-Software/deps/spice-protocol.md)
 * [spice-vdagent](./Non-LFS-Software/deps/spice-vdagent.md)
