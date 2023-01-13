@@ -1,0 +1,81 @@
+diff --unified --recursive renameutils-0.12.0-orig/po/fr.po renameutils-0.12.0-patched/po/fr.po
+--- renameutils-0.12.0-orig/po/fr.po	2012-04-23 06:50:18.000000000 -0400
++++ renameutils-0.12.0-patched/po/fr.po	2023-01-12 21:27:55.574792527 -0500
+@@ -722,7 +722,7 @@
+ #: src/common/error.c:104
+ #, c-format
+ msgid ""
+-"An internal error has occured. Please report this error by sending the\n"
++"An internal error has occurred. Please report this error by sending the\n"
+ "output below to %s.\n"
+ "\n"
+ "Program: %s\n"
+diff --unified --recursive renameutils-0.12.0-orig/po/renameutils.pot renameutils-0.12.0-patched/po/renameutils.pot
+--- renameutils-0.12.0-orig/po/renameutils.pot	2012-04-23 06:50:18.000000000 -0400
++++ renameutils-0.12.0-patched/po/renameutils.pot	2023-01-12 21:27:55.574792527 -0500
+@@ -581,7 +581,7 @@
+ #: src/common/error.c:104
+ #, c-format
+ msgid ""
+-"An internal error has occured. Please report this error by sending the\n"
++"An internal error has occurred. Please report this error by sending the\n"
+ "output below to %s.\n"
+ "\n"
+ "Program: %s\n"
+diff --unified --recursive renameutils-0.12.0-orig/po/sv.po renameutils-0.12.0-patched/po/sv.po
+--- renameutils-0.12.0-orig/po/sv.po	2012-04-23 06:50:18.000000000 -0400
++++ renameutils-0.12.0-patched/po/sv.po	2023-01-12 21:27:55.574792527 -0500
+@@ -705,7 +705,7 @@
+ #: src/common/error.c:104
+ #, c-format
+ msgid ""
+-"An internal error has occured. Please report this error by sending the\n"
++"An internal error has occurred. Please report this error by sending the\n"
+ "output below to %s.\n"
+ "\n"
+ "Program: %s\n"
+diff --unified --recursive renameutils-0.12.0-orig/src/common/error.c renameutils-0.12.0-patched/src/common/error.c
+--- renameutils-0.12.0-orig/src/common/error.c	2009-08-16 12:51:56.000000000 -0400
++++ renameutils-0.12.0-patched/src/common/error.c	2023-01-12 21:27:55.574792527 -0500
+@@ -87,7 +87,7 @@
+ 
+ /**
+  * This function should be called when an internal error has
+- * occured. It will display a more verbose message, asking
++ * occurred. It will display a more verbose message, asking
+  * the user to mail the program author.
+  *
+  * @param msg
+@@ -102,7 +102,7 @@
+ 	if (program_termination_hook != NULL)
+ 		program_termination_hook();
+ 	fprintf(stderr, _("\
+-An internal error has occured. Please report this error by sending the\n\
++An internal error has occurred. Please report this error by sending the\n\
+ output below to %s.\n\
+ \n\
+ Program: %s\n\
+diff --unified --recursive renameutils-0.12.0-orig/src/Makefile.am renameutils-0.12.0-patched/src/Makefile.am
+--- renameutils-0.12.0-orig/src/Makefile.am	2012-04-23 07:10:43.000000000 -0400
++++ renameutils-0.12.0-patched/src/Makefile.am	2023-01-12 21:27:51.394788273 -0500
+@@ -49,7 +49,7 @@
+ 	@[ -f icp ] || (echo $(LN_S) icmd icp ; $(LN_S) icmd icp)
+ 
+ install-exec-local:
+-	$(mkdir_p) $(DESTDIR)($bindir)
++	$(mkdir_p) $(DESTDIR)$(bindir)
+ 	@[ -f $(DESTDIR)$(bindir)/qmv ] || (echo $(LN_S) qcmd $(DESTDIR)$(bindir)/qmv ; $(LN_S) qcmd $(DESTDIR)$(bindir)/qmv)
+ 	@[ -f $(DESTDIR)$(bindir)/qcp ] || (echo $(LN_S) qcmd $(DESTDIR)$(bindir)/qcp ; $(LN_S) qcmd $(DESTDIR)$(bindir)/qcp)
+ 	@[ -f $(DESTDIR)$(bindir)/imv ] || (echo $(LN_S) icmd $(DESTDIR)$(bindir)/imv ; $(LN_S) icmd $(DESTDIR)$(bindir)/imv)
+diff --unified --recursive renameutils-0.12.0-orig/src/Makefile.in renameutils-0.12.0-patched/src/Makefile.in
+--- renameutils-0.12.0-orig/src/Makefile.in	2012-04-23 07:24:10.000000000 -0400
++++ renameutils-0.12.0-patched/src/Makefile.in	2023-01-12 21:27:51.394788273 -0500
+@@ -1577,7 +1577,7 @@
+ 	@[ -f icp ] || (echo $(LN_S) icmd icp ; $(LN_S) icmd icp)
+ 
+ install-exec-local:
+-	$(mkdir_p) $(DESTDIR)($bindir)
++	$(mkdir_p) $(DESTDIR)$(bindir)
+ 	@[ -f $(DESTDIR)$(bindir)/qmv ] || (echo $(LN_S) qcmd $(DESTDIR)$(bindir)/qmv ; $(LN_S) qcmd $(DESTDIR)$(bindir)/qmv)
+ 	@[ -f $(DESTDIR)$(bindir)/qcp ] || (echo $(LN_S) qcmd $(DESTDIR)$(bindir)/qcp ; $(LN_S) qcmd $(DESTDIR)$(bindir)/qcp)
+ 	@[ -f $(DESTDIR)$(bindir)/imv ] || (echo $(LN_S) icmd $(DESTDIR)$(bindir)/imv ; $(LN_S) icmd $(DESTDIR)$(bindir)/imv)

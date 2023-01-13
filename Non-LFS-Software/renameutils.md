@@ -11,12 +11,10 @@ Simple tools to bulk rename and bulk copy files:
 
 ```sh
 wget https://download.savannah.gnu.org/releases/renameutils/renameutils-0.12.0.tar.gz
-wget https://sources.debian.org/data/main/r/renameutils/0.12.0-9/debian/patches/install-exec-local-fix.patch -O renameutils-install-exec-local-fix.patch
-wget https://sources.debian.org/data/main/r/renameutils/0.12.0-9/debian/patches/typo_fix.patch -O renameutils-typo_fix.patch
+wget https://raw.githubusercontent.com/eliminmax/LFS-Build-Notes/main/Non-LFS-Software/patches/renameutils-0.12.0-eliminmax-unified-patch-1.patch
 tar xf renameutils-0.12.0.tar.gz
 cd renameutils-0.12.0
-patch -Np1 ../renameutils-install-exec-local-fix.patch
-patch -Np1 ../renameutils-typo_fix.patch
+patch -Np1 ../renameutils-0.12.0-eliminmax-unified-patch-1.patch
 ./configure                                   \
   --prefix=/usr                               \
   --sysconfdir=/etc                           \
