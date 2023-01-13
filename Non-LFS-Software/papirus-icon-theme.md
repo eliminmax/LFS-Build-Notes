@@ -1,8 +1,8 @@
-### Papirus icon theme 20221201
+# Papirus icon theme 20221201
 
 An icon theme I'm rather fond of, with a smooth, simple, clean look to it.
 
-### Installation
+## Installation
 
 ```sh
 wget https://github.com/PapirusDevelopmentTeam/papirus-icon-theme/archive/refs/tags/20221201.tar.gz -O papirus-icon-theme-20221201.tar.gz

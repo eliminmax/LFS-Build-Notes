@@ -1,4 +1,4 @@
-# Oil 0.12.9-histfile
+# Oil
 
 The Oil shell is "our upgrade path to bash". It consists of `osh`, a largely bash-compatible shell, and `oil`, a new shell language that aims to correct many of the pitfalls of Bourne-style shells. They share a lot of overlapping code. They are written in an interesting way - they're implemented in a subset of Python 2, which is then transpiled into C++ to distribute as release tarballs.
 

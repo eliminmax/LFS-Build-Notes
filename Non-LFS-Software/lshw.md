@@ -1,4 +1,4 @@
-# lshw B.02.19.2
+# lshw
 
 Simple tool to list hardware info.
 

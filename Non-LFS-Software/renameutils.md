@@ -1,4 +1,4 @@
-# renameutils 0.12.0
+# renameutils
 
 Simple tools to bulk rename and bulk copy files:
 

@@ -1,4 +1,4 @@
-### the silver searcher (ag)
+# the silver searcher (ag)
 
 A tool to rapidly search through a directory tree for regex matches. Much faster than `grep --recursive`. Installed from git repository, commit `a61f178`.
 

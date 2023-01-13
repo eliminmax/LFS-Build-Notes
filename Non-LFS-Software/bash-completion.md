@@ -2,7 +2,7 @@
 
 Completion scripts for bash. Without them, tab completion would only complete file names.
 
-## Instalation
+## Installation
 
 ```sh
 wget https://github.com/scop/bash-completion/releases/download/2.11/bash-completion-2.11.tar.xz
@@ -12,6 +12,8 @@ cd bash-completion-2.11
 make
 sudo make install
 ```
+
+## Usage
 
 To use it, you must source the main completion script from within bash:
 

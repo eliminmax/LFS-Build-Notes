@@ -8,6 +8,8 @@ A clean, no-nonsense GTK 2, 3, and 4 theme that follows the principles of materi
 * gnome-themes-extra (BLFS gnome-themes-extra)
 * murrine ([deps/murrine](./deps/murrine.md)
 
+## Installation
+
 ```sh
 wget https://github.com/nana-4/materia-theme/archive/refs/tags/v20210322.tar.gz -O materia-theme-20210322.tar.gz
 

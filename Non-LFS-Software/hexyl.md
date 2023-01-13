@@ -1,4 +1,4 @@
-### hexyl 0.12.0
+# hexyl
 
 A hex-dump utility with colors and fancy output
 

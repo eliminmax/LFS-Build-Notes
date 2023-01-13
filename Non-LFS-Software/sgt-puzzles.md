@@ -1,4 +1,4 @@
-## Simon Tatham's Portable Puzzle Collection
+# Simon Tatham's Portable Puzzle Collection
 
 A selection of simple puzzle games, maintained by the developer of the PuTTY terminal/SSH client for windows. Can be compiled to Java, Javascript+WebAssembly, or native programs on Windows, macOS, and/or Linux systems.
 

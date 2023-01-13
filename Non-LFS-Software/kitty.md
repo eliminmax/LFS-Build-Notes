@@ -1,8 +1,8 @@
-### kitty-0.26.5
+# kitty
 
 An extensible, fast, high-performance GPU-accelerated terminal emulator, with support for python plugins known as "kittens"
 
-Dependencies:
+## Dependencies
 
 * ImageMagick (BLFS ImageMagick)
 * freetype (BLFS FreeType)
@@ -21,6 +21,8 @@ Dependencies:
 * pygments (BLFS Python Modules)
 
 I had already installed all of the B/LFS-provided dependencies except for ImageMagick and Little CMS 2. I built those 2, as well as librsync, without issue.
+
+## Installation
 
 Kitty has its own way of doing things. To build it, you can run the following, but it installs it to the linux-package directory within the source tree by default, so you need to manually copy the build into the /usr directory.
 

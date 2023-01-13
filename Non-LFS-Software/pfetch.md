@@ -1,10 +1,10 @@
-### pfetch-0.6.0
+# pfetch
 
-A system info display tool, written fo POSIX-compliant shells.
+A system info display tool, written for POSIX-compliant shells.
 
 Made by the same person as Neofetch. Output is much smaller, making it good as a pseudo-MOTD.
 
-Installation:
+## Installation
 
 ```sh
 wget https://github.com/dylanaraps/pfetch/archive/refs/tags/0.6.0.tar.gz -O pfetch-0.6.0.tar.gz

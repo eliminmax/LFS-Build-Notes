@@ -1,4 +1,4 @@
-# tmux 3.3a
+# tmux
 
 A **t**erminal **mul**tiplexer with an uncreative name.
 

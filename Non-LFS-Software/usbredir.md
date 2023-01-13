@@ -1,4 +1,4 @@
-# usbredir-0.13.0
+# usbredir
 
 A protocol that allows USB devices to be passed to another machine over a network, or from a host system to a guest virtual machine.
 

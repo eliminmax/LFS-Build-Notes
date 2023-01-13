@@ -1,4 +1,4 @@
-# Nerd Fonts v2.2.2
+# Nerd Fonts
 
 Fonts patched to have symbols useful in various nerdy contexts - such as Linux distro logos, file type icons, and fancy prompt components. I installed a subset of the UbuntuMono and VictorMono Nerd Fonts.
 

@@ -1,4 +1,8 @@
-# bat 0.22.1
+# bat
+
+## Dependencies
+
+* cargo (BLFS Rustc)
 
 ## Installation
 

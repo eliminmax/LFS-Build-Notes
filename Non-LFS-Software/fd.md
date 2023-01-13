@@ -1,6 +1,12 @@
-### fd 8.6.0
+# fd
 
 An alternative to `find` that's easier to use and has saner defaults, in my opinion
+
+## Dependencies
+
+* cargo (BLFS Rustc)
+
+## Installation
 
 ```sh
 wget https://github.com/sharkdp/fd/archive/refs/tags/v8.6.0.tar.gz -O fd-8.6.0.tar.gz

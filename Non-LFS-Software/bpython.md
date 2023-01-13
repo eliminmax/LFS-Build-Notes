@@ -1,4 +1,4 @@
-# BPython
+# bpython
 
 A REPL (Read Evaluate Print Loop) for python, with syntax highlighting, written in python.
 

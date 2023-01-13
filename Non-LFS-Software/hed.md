@@ -1,4 +1,4 @@
-# Hed
+# hed
 
 A simple vi-like hex editor with minimal dependencies.
 

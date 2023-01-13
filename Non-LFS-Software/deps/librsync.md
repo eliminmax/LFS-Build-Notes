@@ -1,4 +1,4 @@
-# librsync-2.3.2
+# librsync
 
 From the README:
 
