@@ -4,7 +4,7 @@ jq is a tool to parse JSON data.
 
 ## Dependencies
 
-* Onigmura ([deps/oniguruma](./deps/onigmura.md))
+* Onigmura ([deps/oniguruma](./deps/onigumura.md))
 
 ## Installation
 

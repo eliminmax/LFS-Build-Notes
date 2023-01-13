@@ -380,7 +380,7 @@ List of installed external dependencies
 * [libevent](./Non-LFS-Software/deps/libevent.md)
 * [librsync](./Non-LFS-Software/deps/librsync.md)
 * [murrine](./Non-LFS-Software/deps/murrine.md)
-* [onigmura](./Non-LFS-Software/deps/onigmura.md)
+* [onigumura](./Non-LFS-Software/deps/onigumura.md)
 * [various python modules](./Non-LFS-Software/deps/python-modules.md)
 * [qemu-guest-agent](./Non-LFS-Software/deps/qemu-guest-agent.md)
 * [spice-protocol](./Non-LFS-Software/deps/spice-protocol.md)
