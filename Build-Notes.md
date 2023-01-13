@@ -36,6 +36,7 @@ Originally, this page was a Github Gist I'd edit as I was building the base LFS 
   * [Installed external software](#installed-external-software)
 * [Software updates](#software-updates)
   * [B/LFS](#blfs)
+  * [Non-B/LFS](#non-blfs)
 * [Miscellaneous Issues](#miscellaneous-issues)
   * [End of chapter 8 crisis](#end-of-chapter-8-crisis)
   * [Kernel config woes](#kernel-config-woes)
@@ -445,6 +446,10 @@ Mostly updated because of security vulnerabilities mentioned on the page listing
     * [xfdesktop](https://archive.xfce.org/xfce/4.18/src/xfdesktop-4.18.0.tar.bz2)
     * [xfwm4](https://archive.xfce.org/xfce/4.18/src/xfwm4-4.18.0.tar.bz2)
     * [xfce4-session](https://archive.xfce.org/xfce/4.18/src/xfce4-session-4.18.0.tar.bz2)
+
+## Non-B/LFS
+
+I replaced Vim-9.0.0228 from B/LFS with Neovim-8.1, which I then upgraded to Neovim-8.2
 
 # Miscellaneous Issues
 
