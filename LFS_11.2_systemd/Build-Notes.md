@@ -3,8 +3,7 @@
 I used Linux From Scratch Version 11.2-systemd as a basis for my build, and noted any deviation from its instructions, and difficulties I ran into while working on it.
 
 The original notes, including extensive documentation about the system I used to bootstrap and build the system, is in the file **Original-Build-Notes.md**.
-/usr/lib/python3.11/site-packages/prompt_toolkit/eventloop/utils.py:118: DeprecationWarning: There is no current event loop
-  return asyncio.get_event_loop_policy().get_event_loop()
+
 My final system included a few extra pieces of software: OpenSSH and Sudo from BLFS, and a few external programs: BASH completion, the Oil/Osh shell with a personal patch, and Neofetch, an eye-candy system info display tool written in bash.
 
 Originally, this page was a Github Gist I'd edit as I was building the base LFS system, but it got so big that Neovim kept freezing while I was editing it. I split off the part containing the entire Kernel config, copied my notes from the point at which I successfully booted the LFS system, and later removed most of the original notes, because this document was starting to get a bit overwhelming, and the old version was already saved to the other file.
