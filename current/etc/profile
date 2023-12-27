@@ -1,0 +1,9 @@
+# Begin /etc/profile
+
+
+export LANG=en_US.utf8
+for i in /etc/profile.d/*.sh; do
+	. "$i"
+done
+
+# End /etc/profile
