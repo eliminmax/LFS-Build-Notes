@@ -167,6 +167,7 @@ In addition to Sudo and BTRFS-Progs, I built the following software from BLFS, a
 * [UnZip-6.0](https://linuxfromscratch.org/blfs/view/12.0/general/unzip.html)
 * [Rustc-1.74.1](https://linuxfromscratch.org/blfs/view/12.0/general/rust.html)
   * Built a newer version, but used the BLFS instructions, replacing the version number whenever it appeared.
+  * I had [an alternative file](./etc/profile.d/rustc.sh) `/etc/profile.d/rustc.sh` file that works with [my existing `/etc/profile` file](./etc/profile)
 
 ### Non-B/LFS
 
