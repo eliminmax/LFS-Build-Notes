@@ -164,6 +164,7 @@ In addition to Sudo and BTRFS-Progs, I built the following software from BLFS, a
 * [Git-2.41.0](https://linuxfromscratch.org/blfs/view/12.0/general/git.html)
 * [LLVM-16.0.5](https://linuxfromscratch.org/blfs/view/12.0/general/llvm.html)
 * [libssh2-1.11.0](https://linuxfromscratch.org/blfs/view/12.0/general/libssh2.html)
+  * Rebuilt with a patch to address the Terrapin vulnerability, available [here](https://www.linuxfromscratch.org/patches/blfs/svn/libssh2-1.11.0-security_fixes-1.patch) as of December 27th, 2023.
 * [UnZip-6.0](https://linuxfromscratch.org/blfs/view/12.0/general/unzip.html)
 * [Rustc-1.74.1](https://linuxfromscratch.org/blfs/view/12.0/general/rust.html)
   * Built a newer version, but used the BLFS instructions, replacing the version number whenever it appeared.
@@ -177,6 +178,7 @@ In addition to Bash-Completion and tiny-clear-elf, I built the following softwar
 * [extra bash completion scripts](./Non-LFS-Software/extra-bash-completion.md)
 * [Neovim-0.9.4](./Non-LFS-Software/neovim.md)
   * I replaced `vim` with Neovim entirely, only keeping `xxd`, which is not bundled with Neovim.
+* [bat-0.24.0](./Non-LFS-Software/bat.md)
 
 ## Problems Encountered and Troubleshooting
 
