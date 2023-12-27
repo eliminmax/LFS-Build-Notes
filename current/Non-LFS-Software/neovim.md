@@ -12,7 +12,7 @@ By default, Neovim's makefile downloads 3rd-party dependencies and statically li
 * Download (HTTP): https://github.com/neovim/neovim/archive/refs/tags/v0.9.4.tar.gz
 
 ***Note:*** The filename of the download is `v0.9.4.tar.gz`.
-If you want it to match the directory contained and/or want it to include the name of the software, rename it to `neovim-v0.9.4.tar.gz`.
+If you want it to match the directory contained and/or want it to include the name of the software, rename it to `neovim-0.9.4.tar.gz`.
 
 ## Installation
 
